@@ -1,0 +1,116 @@
+//
+//  Firestore.swift
+//  Learnalize
+//
+//  Created by Media Davarkhah on 2/19/1401 AP.
+//
+
+import Firebase
+import FirebaseFirestore
+import FirebaseStorage
+import SwiftUI
+class FireStoreManager {
+    
+    static let shared = FireStoreManager()
+    let auth: Auth
+    let firestore: Firestore
+    let storage: Storage
+    private init() {
+         auth = Auth.auth()
+         storage = Storage.storage()
+         firestore = Firestore.firestore()
+    }
+    
+    
+    func retrieveImage(link: String, completionHandler: @escaping (UIImage?, Error?) -> Void) {
+        guard let url = URL(string: link) else {
+            return
+        }
+        URLSession.shared.dataTask(with: url) { data, _ ,error in
+            if let data = data, error == nil {
+                let picture = UIImage(data: data)
+                completionHandler(picture, nil)
+            } else {
+                completionHandler(nil, error)
+            }
+        }
+    }
+    
+    func fetchUser(userId: String, completionHandler: @escaping (_ user: User?, _ error: Error?) -> Void) {
+        
+        print(userId)
+        let docRef = firestore.collection("users").document(userId)
+        print(docRef)
+        docRef.getDocument { (document, error) in
+            
+            guard error == nil else {
+                completionHandler(nil, error)
+                return
+            }
+            
+            if let document = document, document.exists {
+                let data = document.data()
+                if let data = data {
+                    
+                    print("data", data)
+                    
+                    let email = data["email"] as? String ?? ""
+                    let fullname = data["fullName"] as? String ?? ""
+                    let picture = data["picture"] as? String ?? ""
+                    let username = data["username"] as? String ?? ""
+                    
+                    
+                    let user = User(fullName: fullname, picture: picture, email: email, password: "N/A", username: username, uid: userId)
+                    completionHandler(user, nil)
+                }
+            }
+        }
+    }
+    
+    func save(image: UIImage, completionHandler: @escaping (URL?, Error?) -> Void){
+        
+        guard let uid = auth.currentUser?.uid else { return }
+        let ref = storage.reference(withPath: uid)
+        let imageData = image.jpegData(compressionQuality: 0.5)
+        guard let imageData = imageData else { return }
+        ref.putData(imageData, metadata: nil) { metadata, error in
+            if let error = error {
+                completionHandler(nil,error)
+                return
+            }
+            
+            ref.downloadURL { url, error in
+                if let error = error {
+                    completionHandler(nil,error)
+                    return
+                }
+                completionHandler(url,nil)
+            }
+        }
+                
+    }
+    func editPicture(url: String) {
+        if let id = auth.currentUser?.uid {
+            let docid = firestore.collection("users").document(id).documentID
+            firestore.collection("users").document(docid).updateData(["picture":url])
+        }
+        
+    }
+    func save(user: User, with imageData: String, completionHandler: @escaping (Bool, Error?) -> Void){
+       
+        guard let uid = FireStoreManager.shared.auth.currentUser?.uid else { return }
+        let userData = ["fullName": user.fullName, "picture": imageData,"email": user.email,"password": user.password,"username": user.username,"id":uid]
+        
+    
+        FireStoreManager.shared.firestore.collection("users").document(uid).setData(userData) { error in
+            if let error = error {
+                completionHandler(true, error)
+                return
+            }
+           
+            completionHandler(true, nil)
+        }
+    }
+   
+
+}
