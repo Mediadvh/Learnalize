@@ -7,7 +7,7 @@
 
 import Foundation
 extension HomeView {
-    @MainActor class ModelView: ObservableObject {
+    @MainActor class ViewModel: ObservableObject {
         @Published var showsProfileView = false
 
         

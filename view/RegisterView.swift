@@ -10,9 +10,7 @@ import SwiftUI
 
 struct RegisterView: View {
    
-    @StateObject private var modelView = ModelView()
-    
-   
+    @StateObject private var viewModel = ViewModel()
     
     var body: some View {
         NavigationView {
@@ -31,18 +29,18 @@ struct RegisterView: View {
                     NavigationLink(destination: LoginView()) {
                         loginButton
                     }
-                    NavigationLink(destination: MainView(), isActive: $modelView.showsMainView) {
+                    NavigationLink(destination: MainView(), isActive: $viewModel.showsMainView) {
                         EmptyView()
                     }
                 }
-                if modelView.isLoading {
-                    LoadingView()
+                if viewModel.isLoading {
+                    LoadingView(color: Colors.register)
                 }
             } .navigationTitle("Register")
         }
         .accentColor(Color("accent"))
-        .sheet(isPresented: $modelView.profileButtonTapped) {
-            ImagePicker(sourceType: .photoLibrary, selectedImage: $modelView.image)
+        .sheet(isPresented: $viewModel.profileButtonTapped) {
+            ImagePicker(sourceType: .photoLibrary, selectedImage: $viewModel.image)
         }
     }
     
@@ -51,10 +49,10 @@ struct RegisterView: View {
     var textFieldsVStack: some View {
         return VStack {
             
-            textField(placeholder: "full name", input: $modelView.fullname, isEmpty: modelView.fullname.isEmpty)
-            textField(placeholder: "user name", input: $modelView.username, isEmpty: modelView.username.isEmpty)
-            textField(placeholder: "email", input: $modelView.email, isEmpty: modelView.email.isEmpty)
-            secureField(placeholder: "password", input: $modelView.password, isEmpty: modelView.password.isEmpty)
+            textField(placeholder: "full name", input: $viewModel.fullname, isEmpty: viewModel.fullname.isEmpty)
+            textField(placeholder: "user name", input: $viewModel.username, isEmpty: viewModel.username.isEmpty)
+            textField(placeholder: "email", input: $viewModel.email, isEmpty: viewModel.email.isEmpty)
+            secureField(placeholder: "password", input: $viewModel.password, isEmpty: viewModel.password.isEmpty)
             
         }
         .padding()
@@ -63,9 +61,9 @@ struct RegisterView: View {
     
     var profileButton: some View {
         Button {
-            modelView.tapProfileButton()
+            viewModel.tapProfileButton()
         } label: {
-            Image(uiImage: modelView.image)
+            Image(uiImage: viewModel.image)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(width: 120, height: 120, alignment: .center)
@@ -77,8 +75,8 @@ struct RegisterView: View {
     
     var registerButton: some View {
         Button {
-            modelView.isLoading = true
-            modelView.registerUser()
+            viewModel.isLoading = true
+            viewModel.registerUser()
         } label: {
             ZStack {
                 Rectangle()

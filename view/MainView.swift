@@ -30,9 +30,9 @@ struct MainView: View {
                 
                 
            
-                    ProfileView()
+                    SearchView()
                         .tabItem {
-                            Label("profile", systemImage: "person.fill")
+                            Label("search", systemImage: "magnifyingglass")
                         }
                     .navigationTitle("Profile")
                 

@@ -9,18 +9,18 @@ import SwiftUI
 import SDWebImageSwiftUI
 
 struct ProfileView: View {
-    @StateObject var modelView = ModelView()
+    @StateObject var viewModel = ViewModel()
    
 
     var body: some View {
         NavigationView {
             VStack {
-                if modelView.picFromWeb {
-                    if let pic = modelView.webPicture {
-                        webPictureAndName(image:pic, username: modelView.username)
+                if viewModel.picFromWeb {
+                    if let pic = viewModel.webPicture {
+                        webPictureAndName(image:pic, username: viewModel.username)
                     }
                 } else {
-                    pictureAndName(image: modelView.defaultPicture, username: modelView.username)
+                    pictureAndName(image: viewModel.defaultPicture, username: viewModel.username)
                 }
                 
                 
@@ -38,7 +38,10 @@ struct ProfileView: View {
                 Text("recent activities")
                     .font(.title3)
                     
-                activityCollection(isAbleToJoin: false,showsUsername: false,model: ["Physics 101","Math","programming languages"])
+                if let activities = viewModel.activities {
+                    activityList(model: activities)
+                }
+               
             }
         }
         
@@ -116,6 +119,22 @@ struct ProfileView: View {
             }
             .foregroundColor(Color("background"))
             .font(Font.system(size: 20))
+        }
+
+    }
+    // TODO: fix duality
+    func activityList(model: [Activity]) -> some View {
+        List {
+            let colors = ["activityCard 1", "activityCard 2", "activityCard 3", "activityCard 4"]
+            ForEach(model, id: \.self) { item in
+
+                activityCard(isAbleToJoin: false,showsUsername: false,activity: item, color: Color(colors.randomElement() ?? "activityCard 1"), participants: 10)
+
+            }  .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+        }
+        .refreshable {
+            viewModel.showActivities()
         }
 
     }

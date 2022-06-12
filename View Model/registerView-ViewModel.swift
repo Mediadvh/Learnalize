@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 extension RegisterView {
-    @MainActor class ModelView: ObservableObject {
+    @MainActor class ViewModel: ObservableObject {
         @Published var profileButtonTapped = false
         @Published var presentingModal = false
         @Published var image: UIImage = UIImage(named: "profile")!
@@ -41,7 +41,7 @@ extension RegisterView {
                 email: self.email,
                 password: self.password,
                 username: self.username,
-                uid: uid)
+                id: uid)
             user.save(with: self.image) { success, error in
                 self.isLoading = false
                 if success {

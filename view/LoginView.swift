@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct LoginView: View {
-    @StateObject var modelView = ModelView()
+    @StateObject var viewModel = ViewModel()
 
     
     var body: some View {
         ZStack {
             
-            Color.teal
+            Color(Colors.login)
                 .ignoresSafeArea()
             VStack {
                 Text("LEARNALIZE")
@@ -25,17 +25,17 @@ struct LoginView: View {
                    
         
                 loginButton
-                    .fullScreenCover(isPresented: $modelView.model) {
+                    .fullScreenCover(isPresented: $viewModel.model) {
                         MainView()
                     }
                 
             }
            
-            NavigationLink(destination: MainView(), isActive: $modelView.showsMainView) {
+            NavigationLink(destination: MainView(), isActive: $viewModel.showsMainView) {
                 EmptyView()
             }
-            if modelView.isLoading {
-                LoadingView()
+            if viewModel.isLoading {
+                LoadingView(color: Colors.login)
             }
             
         }
@@ -48,9 +48,9 @@ struct LoginView: View {
     // -MARK: UIElements
     var textFields: some View {
         VStack {
-            textField(placeholder: "email", input: $modelView.email, isEmpty: modelView.email.isEmpty)
+            textField(placeholder: "email", input: $viewModel.email, isEmpty: viewModel.email.isEmpty)
                
-            secureField(placeholder: "password", input: $modelView.password, isEmpty: modelView.password.isEmpty)
+            secureField(placeholder: "password", input: $viewModel.password, isEmpty: viewModel.password.isEmpty)
              
                 
         }
@@ -61,8 +61,8 @@ struct LoginView: View {
     }
     var loginButton: some View {
         Button {
-            modelView.isLoading = true
-            modelView.login()
+            viewModel.isLoading = true
+            viewModel.login()
         } label: {
             ZStack {
                 Rectangle()

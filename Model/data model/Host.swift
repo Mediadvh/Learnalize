@@ -8,31 +8,35 @@
 
 import Foundation
 import UIKit
-//class Host: User {
-//    // MARK: properties
-//    private var cameraIsOn: Bool
-//    private var whiteBoardIsOn: Bool
-//    private var micIsOn: Bool
-//    // MARK: initializer
-//    init(fullName: String, picture: String?, email: String, password: String, username: String,user: User,cameraIsOn: Bool = false, whiteBoardIsOn: Bool = false, micIsOn: Bool = false) {
-//       
-//        self.cameraIsOn = cameraIsOn
-//        self.whiteBoardIsOn = whiteBoardIsOn
-//        self.micIsOn = micIsOn
-//        
-//        super.init(fullName: fullName, picture, email: email, password: password, username: username)
-//    }
-//    
-//    // MARK: methods
-//    private func grantAccess() {
-//        
-//    }
-//    private func turnOn(tool: String) {
-//        
-//    }
-//    private func turnOff(tool: String) {
-//        
-//    }
-//   
-//   
-//}
+class Host: User {
+    // MARK: properties
+    internal var cameraIsOn: Bool
+    internal var whiteBoardIsOn: Bool
+    internal var micIsOn: Bool
+    // MARK: initializer
+    init(user: User,cameraIsOn: Bool, whiteBoardIsOn: Bool, micIsOn: Bool) {
+       
+        self.cameraIsOn = cameraIsOn
+        self.whiteBoardIsOn = whiteBoardIsOn
+        self.micIsOn = micIsOn
+        
+        super.init(fullName: user.fullName, picture: user.picture, email: user.email, password: user.password, username: user.username, id: user.id)
+    }
+    
+    required init(from decoder: Decoder) throws {
+        fatalError("init(from:) has not been implemented")
+    }
+    
+    // MARK: methods
+    private func grantAccess() {
+        
+    }
+    private func turnOn(tool: String) {
+        
+    }
+    private func turnOff(tool: String) {
+        
+    }
+   
+   
+}

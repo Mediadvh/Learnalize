@@ -8,23 +8,23 @@
 import Foundation
 import UIKit
 import SDWebImage
-
-class User {
+import FirebaseFirestoreSwift
+class User: Codable {
     // MARK: properties
     internal var fullName: String!
     internal var picture: String!
     internal var email: String!
     internal var password: String!
-    internal var uid: String!
+    internal var id: String! = UUID().uuidString
     internal var username: String!
     
     // MARK: initializer
-    init(fullName: String, picture: String? ,email: String, password:String, username: String, uid: String) {
+    init(fullName: String, picture: String? ,email: String, password:String, username: String, id: String) {
         self.fullName = fullName
         self.email = email
         self.password = password
         self.username = username
-        self.uid = uid
+        self.id = id
         self.picture = picture
     }
    
@@ -85,4 +85,8 @@ class User {
     private func remove() {
         
     }
+}
+
+extension User: Identifiable {
+    
 }

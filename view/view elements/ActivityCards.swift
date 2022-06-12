@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-func activityCard(isAbleToJoin: Bool,showsUsername: Bool,subject: String, color: Color, participants: Int) -> some View {
+func activityCard(isAbleToJoin: Bool,showsUsername: Bool,activity: Activity, color: Color, participants: Int) -> some View {
     return VStack (alignment: .leading) {
         if(showsUsername) {
             usernameButton(imageName: "person.circle.fill")
@@ -17,7 +17,7 @@ func activityCard(isAbleToJoin: Bool,showsUsername: Bool,subject: String, color:
            color
                .cornerRadius(10)
            VStack {
-               Text("studying \(Text("\(subject)").bold()), do you want to join me?")
+               Text("studying \(Text("\(activity.name)").bold()), do you want to join me?")
                    .font(.title2)
                    .fixedSize(horizontal: false, vertical: true)
                    .padding()
@@ -39,16 +39,19 @@ func activityCard(isAbleToJoin: Bool,showsUsername: Bool,subject: String, color:
         }
     }
 }
-
-func activityCollection(isAbleToJoin: Bool,showsUsername: Bool ,model: [String]) -> some View {
+// TODO: fix duality
+func activityList(isAbleToJoin: Bool,showsUsername: Bool ,model: [Activity]) -> some View {
   
     List {
         let colors = ["activityCard 1", "activityCard 2", "activityCard 3", "activityCard 4"]
         ForEach(model, id: \.self) { item in
             
-            activityCard(isAbleToJoin: isAbleToJoin,showsUsername: showsUsername,subject: item, color: Color(colors.randomElement() ?? "activityCard 1"), participants: 10)
+            activityCard(isAbleToJoin: isAbleToJoin,showsUsername: showsUsername,activity: item, color: Color(colors.randomElement() ?? "activityCard 1"), participants: 10)
             
         }  .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
+    }
+    .refreshable {
+        
     }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 extension LoginView {
-    @MainActor class ModelView: ObservableObject {
+    @MainActor class ViewModel: ObservableObject {
         @Published var email = ""
         @Published var password = ""
         @Published var isLoading = false

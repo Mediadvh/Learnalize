@@ -108,14 +108,54 @@ struct ImagePicker: UIViewControllerRepresentable {
     }
 }
 struct LoadingView: View {
+    var color: UIColor
     var body: some View {
         ZStack {
-            Color("register")
+            Color(color)
                 .opacity(0.8)
                 .ignoresSafeArea()
             ProgressView()
                 .progressViewStyle(.circular)
-                .scaleEffect(4)
+                .scaleEffect(2)
         }
     }
 }
+
+struct SearchBar: View {
+    var placeholder: String
+    
+    @Binding var text: String
+    @Environment(\.colorScheme) var colorScheme
+    var body: some View {
+        
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.secondary)
+            TextField(placeholder, text: $text)
+            if text != "" {
+                Image(systemName: "xmark.circle.fill")
+                    .imageScale(.medium)
+                    .foregroundColor(Color(.systemGray3))
+                    .padding(3)
+                    .onTapGesture {
+                        withAnimation {
+                            self.text = ""
+                          }
+                    }
+            }
+        }
+        .padding(10)
+        .background(backgroundColor)
+        .cornerRadius(12)
+        .padding(.vertical, 10)
+    }
+    var backgroundColor: Color {
+      if colorScheme == .dark {
+           return Color(.systemGray5)
+       } else {
+           return Color(.systemGray6)
+       }
+    }
+}
+
+

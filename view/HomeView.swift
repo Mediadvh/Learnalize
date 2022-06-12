@@ -13,7 +13,7 @@ var model = ["Math", "C++","Python","german","swift","software process","IOT","f
 
 struct HomeView: View {
     
-    @StateObject var modelView = ModelView()
+    @StateObject var viewModel = ViewModel()
     
     var body: some View {
         NavigationView {
@@ -30,7 +30,8 @@ struct HomeView: View {
                 //                        profileButton
                 //                    }
                 
-                activityCollection(isAbleToJoin: true, showsUsername: true, model: model)
+             
+//                activityCollection(isAbleToJoin: true, showsUsername: true, model: model)
                 
             }
             

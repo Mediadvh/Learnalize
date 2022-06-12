@@ -9,14 +9,15 @@ import SwiftUI
 
 
 struct PostActivityView: View {
-    @StateObject var viewModel = ModelView()
+    @StateObject var viewModel = ViewModel()
     @State var pickedColor = Color("activityCard 1")
+  
     var body: some View {
         NavigationView
         {
             VStack {
                 Text("New Activity")
-                activityDetail(activityInput: $viewModel.activityInput, descriptionInput: $viewModel.descriptionInput)
+                activityDetail(activityInput: $viewModel.name, descriptionInput: $viewModel.description)
                 postButton
                 Spacer(minLength: 20)
             }
@@ -28,6 +29,7 @@ struct PostActivityView: View {
     var postButton: some View {
         Button {
             // alert
+            viewModel.post()
         } label : {
             Text("post")
                 .frame(width: 100, height: 10)
@@ -36,6 +38,9 @@ struct PostActivityView: View {
                 .foregroundColor(Color("background"))
                 .cornerRadius(10)
         }
+        .alert("posted Activity", isPresented: $viewModel.showingAlert) {
+                    Button("OK", role: .cancel) { }
+                }
     }
 
     func tag(color: String) -> some View {
@@ -57,7 +62,8 @@ struct PostActivityView: View {
         .frame(height: 50)
     }
     var numberPicker: some View {
-        Picker(selection: .constant(1), label: Text("Picker")) {
+        
+        Picker(selection: $viewModel.participantsLimit, label: Text("Picker")) {
             Text("1").tag(1)
             Text("2").tag(2)
             Text("3").tag(3)
@@ -84,12 +90,12 @@ struct PostActivityView: View {
                     .foregroundColor(Color("accent"))
                     .font(.body)
                
-                textField(placeholder: "What do you want to learn?", input: activityInput, isEmpty: true)
+                textField(placeholder: "", input: activityInput, isEmpty: true)
                     .padding()
                 Text("Description:(optional)")
                     .font(.body)
                
-                textField(placeholder: "description", input: descriptionInput, isEmpty: true)
+                textField(placeholder: "", input: descriptionInput, isEmpty: true)
                     .padding()
                 Text("number of people who can join:")
                     .font(.body)
