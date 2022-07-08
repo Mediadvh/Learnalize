@@ -13,6 +13,7 @@ extension LoginView {
         @Published var isLoading = false
         @Published var showsMainView = false
         @Published var model = false
+        @Published var failed = false
         
        
         func login() {
@@ -20,6 +21,7 @@ extension LoginView {
                 self.isLoading = false
                 self.showsMainView = true
                 self.model = true
+                self.failed = !success
             }
         }
         

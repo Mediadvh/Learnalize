@@ -11,25 +11,17 @@ struct MainView: View {
     var body: some View {
         if(Authentication.shared.isLoggedIn()) {
             TabView {
-                
-            
                     HomeView()
                         .tabItem {
                             Label("Home", systemImage: "house")
                         }
                         .navigationTitle("Home")
-                
-                
-           
                     PostActivityView()
                         .tabItem {
                             Label("Post", systemImage: "plus.circle")
                                 .font(.largeTitle)
                         }
                         .navigationTitle("New Activity")
-                
-                
-           
                     SearchView()
                         .tabItem {
                             Label("search", systemImage: "magnifyingglass")

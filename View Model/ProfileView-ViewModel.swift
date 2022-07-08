@@ -49,7 +49,6 @@ extension ProfileView {
         func showActivities() {
             FireStoreManager.shared.fetchActivities(filter: Authentication.shared.getCurrentUserUid()!) { activities , error in
                 if let activities = activities {
-                    print(activities[0].name)
                     self.activities = activities
                 }
                 

@@ -22,7 +22,8 @@ func usernameButton(imageName: String) -> some View {
 
 var joinButton: some View {
     Button {
-        print("move to activityView")
+       
+       
     } label: {
         VStack {
             Image(systemName: "plus.circle.fill")

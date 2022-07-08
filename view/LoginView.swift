@@ -22,9 +22,10 @@ struct LoginView: View {
                     .font(.largeTitle)
         
                textFields
-                   
-        
-                loginButton
+               loginButton
+                    .alert("failed to login", isPresented: $viewModel.failed, actions: {
+                        Button("Ok", role: .cancel) { }
+                    })
                     .fullScreenCover(isPresented: $viewModel.model) {
                         MainView()
                     }
@@ -37,6 +38,9 @@ struct LoginView: View {
             if viewModel.isLoading {
                 LoadingView(color: Colors.login)
             }
+            
+            
+            
             
         }
         
@@ -75,6 +79,7 @@ struct LoginView: View {
             }
         }
     }
+    
 }
 
 struct LoginView_Previews: PreviewProvider {

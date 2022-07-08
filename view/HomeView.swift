@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-var model = ["Math", "C++","Python","german","swift","software process","IOT","fundamentals of programming", "Algebra 101","Physics 101" ]
 
 
 
@@ -19,23 +18,32 @@ struct HomeView: View {
         NavigationView {
             ZStack(alignment: .top) {
             Color("background")
-            Text("Learnalize")
-                .font(.largeTitle)
-                .padding()
-                .navigationBarHidden(true)
-            VStack(alignment: .trailing) {
-                
-                // TODO: add a navigation view somewhere appropriate
-                //                    NavigationLink(destination: ProfileView()) {
-                //                        profileButton
-                //                    }
-                
-             
-//                activityCollection(isAbleToJoin: true, showsUsername: true, model: model)
-                
-            }
+                VStack {
+                    HStack {
+                        Text("Learnalize")
+                        .font(.largeTitle)
+                        .padding()
+                        .navigationBarHidden(true)
+                        Spacer()
+        
+                        NavigationLink(destination: ProfileView()) {
+                              profileButton
+                            }
+                    }
+                    if let activities = viewModel.activities {
+                        activityList(isAbleToJoin: true, showsUsername: true, model: activities)
+                      
+                        
+                    } else if viewModel.isLoading {
+                        LoadingView(color: .white)
+                    } else {
+                        Text("nothing to show here")
+                    }
+                    
+                 
+                }
             
-            
+                
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .foregroundColor(Color("accent"))

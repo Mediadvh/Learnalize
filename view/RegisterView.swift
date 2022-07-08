@@ -26,6 +26,9 @@ struct RegisterView: View {
                     textFieldsVStack
                         
                     registerButton
+                        .alert("failed to sign up", isPresented: $viewModel.failed, actions: {
+                            Button("Ok", role: .cancel) { }
+                        })
                     NavigationLink(destination: LoginView()) {
                         loginButton
                     }
