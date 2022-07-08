@@ -20,7 +20,7 @@ extension RegisterView {
         @Published var isLoading = false
         @Published var showAlert = false
         @Published var showsMainView = false
-        
+        @Published var failed = false
         // MARK: methods
         
         func setPresentingModal(_ val: Bool){
@@ -46,9 +46,11 @@ extension RegisterView {
                 self.isLoading = false
                 if success {
                     self.showsMainView = success
+                    self.failed = !success
                 }
                 else {
                     self.showAlert = true
+                    self.failed = !success
                 }
             }
             
@@ -61,6 +63,7 @@ extension RegisterView {
                 if success {
                     // if successful, save the user info to database
                     self.saveuserData()
+                    self.failed = !success
                 }
                 
             }
