@@ -27,14 +27,12 @@ struct RegisterView: View {
                         
                     registerButton
                         .alert("failed to sign up", isPresented: $viewModel.failed, actions: {
-                            Button("Ok", role: .cancel) { }
+                            Button("Ok", role: .cancel) { viewModel.failed = false }
                         })
                     NavigationLink(destination: LoginView()) {
                         loginButton
                     }
-                    NavigationLink(destination: MainView(), isActive: $viewModel.showsMainView) {
-                        EmptyView()
-                    }
+                    
                 }
                 if viewModel.isLoading {
                     LoadingView(color: Colors.register)
@@ -45,18 +43,17 @@ struct RegisterView: View {
         .sheet(isPresented: $viewModel.profileButtonTapped) {
             ImagePicker(sourceType: .photoLibrary, selectedImage: $viewModel.image)
         }
+        .fullScreenCover(isPresented: $viewModel.showsMainView) { MainView() }
     }
     
     
     // MARK: -UIElements
     var textFieldsVStack: some View {
         return VStack {
-            
             textField(placeholder: "full name", input: $viewModel.fullname, isEmpty: viewModel.fullname.isEmpty)
             textField(placeholder: "user name", input: $viewModel.username, isEmpty: viewModel.username.isEmpty)
             textField(placeholder: "email", input: $viewModel.email, isEmpty: viewModel.email.isEmpty)
             secureField(placeholder: "password", input: $viewModel.password, isEmpty: viewModel.password.isEmpty)
-            
         }
         .padding()
         .padding()
@@ -72,6 +69,11 @@ struct RegisterView: View {
                 .frame(width: 120, height: 120, alignment: .center)
                 .clipShape(Circle())
                 .foregroundColor(.black)
+                .overlay {
+                    Circle()
+                        .stroke(.black, lineWidth: 4)
+                }
+                
         }
     }
     
@@ -79,7 +81,7 @@ struct RegisterView: View {
     var registerButton: some View {
         Button {
             viewModel.isLoading = true
-            viewModel.registerUser()
+            viewModel.register()
         } label: {
             ZStack {
                 Rectangle()
@@ -96,6 +98,7 @@ struct RegisterView: View {
     var loginButton: some View {
         HStack {
             Text("already have an account?")
+                .font(.body)
             Text("login")
                 .font(.bold(.body)())
         }

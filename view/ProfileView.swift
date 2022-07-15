@@ -9,29 +9,48 @@ import SwiftUI
 import SDWebImageSwiftUI
 
 struct ProfileView: View {
+    var userId: String?
     @StateObject var viewModel = ViewModel()
-   
+    
+    init(id: String? = Authentication.shared.getCurrentUserUid()) {
+        userId = id
+    }
 
     var body: some View {
-        NavigationView {
+//        NavigationView {
+        
             VStack {
-                if viewModel.picFromWeb {
-                    if let pic = viewModel.webPicture {
-                        webPictureAndName(image:pic, username: viewModel.username)
+
+               HStack {
+                   Spacer()
+                    if viewModel.picFromWeb {
+                        if let pic = viewModel.webPicture {
+                            webPictureAndName(image:pic, username: viewModel.username)
+                                .padding()
+                        }
+                    } else {
+                        pictureAndName(image: viewModel.defaultPicture, username: viewModel.username)
+                            .padding()
+
                     }
-                } else {
-                    pictureAndName(image: viewModel.defaultPicture, username: viewModel.username)
+                       Spacer()
+                    
+                   VStack {
+                       if viewModel.canFollow {
+                           followButton
+                            
+                       }
+                       followers()
+                      
+                       followings()
+                          
+                   }
+                   Spacer()
+                    
                 }
+               .frame(alignment: .top)
+               
                 
-                
-                HStack {
-                    activitiesNumber(number: 10)
-                        .padding()
-                    Spacer()
-                    friendsNumber(number: 15)
-                        .padding()
-                }.frame(height: 80)
-                    .navigationBarHidden(true)
                 
                 //            .border(Color("accent"), width: 4)
                 Spacer(minLength: 50)
@@ -41,11 +60,26 @@ struct ProfileView: View {
                 if let activities = viewModel.activities {
                     activityList(model: activities)
                 }
+              
                
             }
-        }
+            .sheet(isPresented: $viewModel.showsFollowers) {
+                UserList(users: viewModel.followers, selectable: false)
+            }
+            .sheet(isPresented: $viewModel.showsFollowings) {
+                UserList(users: viewModel.followings, selectable: false)
+            }
+            .onAppear() {
+                if let userId = userId {
+                    viewModel.userIDToShow = userId
+                }
+                viewModel.setup()
+                
+            }
+            
         
     }
+    
     // MARK: UIElemets
     
     func pictureAndName(image: UIImage,username: String) -> some View {
@@ -59,7 +93,6 @@ struct ProfileView: View {
                 .cornerRadius(100)
                 .foregroundColor(Color("accent"))
             Text(username)
-                .font(.largeTitle)
                 .foregroundColor(Color("accent"))
             
            
@@ -83,52 +116,54 @@ struct ProfileView: View {
         
     }
     
-    func activitiesNumber(number: Int) -> some View {
+    func followers() -> some View {
         Button {
-            print("activitiesNumber tapped")
+            viewModel.getFollowers()
+            viewModel.showsFollowers = true
         } label : {
             ZStack {
                 Rectangle()
-                    .foregroundColor(Color("accent"))
+                    .foregroundColor(Color(Colors.accent))
                     .cornerRadius(10)
-              
-                HStack {
-                    Text("\(number)")
-                    Text("Activities")
-                }
+                    .frame(width: 150,height: 45)
+                
+                Text("followers")
+                
+                
+                    .foregroundColor(Color(Colors.background))
+                    .font(.body)
+                    .lineLimit(0)
             }
-           
-            .foregroundColor(Color("background"))
-            .font(Font.system(size: 20))
         }
     }
-
-    func friendsNumber(number: Int) -> some View {
+    
+    func followings() -> some View {
         Button {
-            print("friendsNumber tapped")
+            viewModel.getFollowings()
+            viewModel.showsFollowings = true
         } label : {
-            ZStack{
+            ZStack {
                 Rectangle()
+                    .foregroundColor(Color(Colors.accent))
                     .cornerRadius(10)
-                    .foregroundColor(Color("accent"))
-                HStack {
-                    Text("\(number)")
-                    Text("Friends")
-                }
+                    .frame(width: 150,height: 45)
                 
+                Text("followings")
+                
+                    .foregroundColor(Color(Colors.background))
+                    .font(.body)
+                    .lineLimit(0)
             }
-            .foregroundColor(Color("background"))
-            .font(Font.system(size: 20))
         }
-
+        
     }
     // TODO: fix duality
     func activityList(model: [Activity]) -> some View {
         List {
-            let colors = ["activityCard 1", "activityCard 2", "activityCard 3", "activityCard 4"]
+           
             ForEach(model, id: \.self) { item in
 
-                activityCard(isAbleToJoin: false,showsUsername: false,activity: item, color: Color(colors.randomElement() ?? "activityCard 1"), participants: 10)
+                activityCard(isAbleToJoin: false,showsUsername: false,activity: item, color: Color(item.tagColor), participants: 10)
 
             }  .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
@@ -138,7 +173,24 @@ struct ProfileView: View {
         }
 
     }
-    
+    var followButton: some View {
+        Button {
+            viewModel.followButtonTapped()
+        } label: {
+            ZStack {
+                Rectangle()
+                    .foregroundColor(Color(viewModel.followColor))
+                    .cornerRadius(10)
+                    .frame(width: 150,height: 45)
+                Text(viewModel.followButtonState.rawValue)
+                    .foregroundColor(.white)
+                    .font(.body)
+                    .lineLimit(0)
+                        
+               
+            }
+        }
+    }
 
 }
 

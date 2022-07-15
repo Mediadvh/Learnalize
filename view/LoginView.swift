@@ -24,7 +24,9 @@ struct LoginView: View {
                textFields
                loginButton
                     .alert("failed to login", isPresented: $viewModel.failed, actions: {
-                        Button("Ok", role: .cancel) { }
+                        Button("Ok", role: .cancel) {
+                            viewModel.failed = false
+                        }
                     })
                     .fullScreenCover(isPresented: $viewModel.model) {
                         MainView()

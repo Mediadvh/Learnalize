@@ -13,7 +13,7 @@ import SwiftUI
 struct HomeView: View {
     
     @StateObject var viewModel = ViewModel()
-    
+
     var body: some View {
         NavigationView {
             ZStack(alignment: .top) {
@@ -25,17 +25,21 @@ struct HomeView: View {
                         .padding()
                         .navigationBarHidden(true)
                         Spacer()
-        
-                        NavigationLink(destination: ProfileView()) {
-                              profileButton
+                        
+                        HStack {
+                            NavigationLink(destination: ProfileView()) {
+                                profileButton
                             }
+                            logoutButton
+                            
+                        }
                     }
                     if let activities = viewModel.activities {
                         activityList(isAbleToJoin: true, showsUsername: true, model: activities)
                       
                         
                     } else if viewModel.isLoading {
-                        LoadingView(color: .white)
+                        LoadingView(color: Colors.background)
                     } else {
                         Text("nothing to show here")
                     }
@@ -50,24 +54,34 @@ struct HomeView: View {
             .navigationBarHidden(true)
             
         }
+        .alert("Failed to logout!", isPresented: $viewModel.failLogOut, actions: {
+            Button("Ok", role: .cancel) {
+                viewModel.failLogOut = false
+            }
+        })
+        .fullScreenCover(isPresented: $viewModel.loggedOut) {
+            RegisterView()
+        }
         
     }
     
     // MARK: UIElements
     var profileButton: some View {
-    
         Image(systemName: "person.fill")
             .font(.largeTitle)
             .padding()
-            
-        
     }
-    
-    
-  
-
-
-    
+    var logoutButton: some View {
+        Button {
+            viewModel.logout()
+        } label: {
+            Text("logout")
+                .font(.body)
+                .padding()
+                .foregroundColor(.red)
+            
+        }
+    }
 }
 
 

@@ -19,7 +19,7 @@ extension SearchView {
         @Published var resultUsers = [User]()
         @Published var foundResult = true
         @Published var isLoading = false
-        
+       // @Published var moveToProfile = false
       
         func searchActivity(name: String) {
             FireStoreManager.shared.searchActivity(by: name) { activities, error in
@@ -54,8 +54,6 @@ extension SearchView {
                     self.foundResult = true
                     self.isLoading = false
                     self.resultUsers = users
-                    
-                
                 }
                 
             }

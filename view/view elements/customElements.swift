@@ -51,8 +51,7 @@ func textField(placeholder: String, input: Binding<String>, isEmpty: Bool) -> so
 }
 
 func secureField(placeholder: String, input: Binding<String>, isEmpty: Bool) -> some View {
-
-    TextField("", text: input, prompt: Text(placeholder))
+    SecureField("", text: input, prompt: Text(placeholder))
         .placeholder(when: isEmpty, placeholder: {
             Text(placeholder).foregroundColor(.gray)
         })
@@ -61,8 +60,10 @@ func secureField(placeholder: String, input: Binding<String>, isEmpty: Bool) -> 
         .cornerRadius(10)
         //.padding()
         .font(.body)
+        
         .foregroundColor(.black)
         .accentColor(.black)
+    
     
 }
 struct ImagePicker: UIViewControllerRepresentable {
@@ -158,5 +159,6 @@ struct SearchBar: View {
        }
     }
 }
+
 
 

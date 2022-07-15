@@ -10,25 +10,28 @@ import SwiftUI
 
 struct PostActivityView: View {
     @StateObject var viewModel = ViewModel()
-    @State var pickedColor = Color("activityCard 1")
+
   
     var body: some View {
-        NavigationView
-        {
-            VStack {
-                Text("New Activity")
-                activityDetail(activityInput: $viewModel.name, descriptionInput: $viewModel.description)
-                postButton
-                Spacer(minLength: 20)
-            }
-            .navigationBarHidden(true)
+        
+        VStack {
+            //Text("New Activity")
+            activityDetail(activityInput: $viewModel.name, descriptionInput: $viewModel.description)
+            postButton
+            Spacer(minLength: 20)
         }
+        .fullScreenCover(isPresented: $viewModel.success) {
+            ActivityView()
+        }
+        
+        
        
     }
     // MARK: UIElements
     var postButton: some View {
         Button {
             // alert
+            
             viewModel.post()
         } label : {
             Text("post")
@@ -38,14 +41,14 @@ struct PostActivityView: View {
                 .foregroundColor(Color("background"))
                 .cornerRadius(10)
         }
-        .alert("posted Activity", isPresented: $viewModel.showingAlert) {
+        .alert("could not post activity!", isPresented: $viewModel.showFailAlert) {
                     Button("OK", role: .cancel) { }
                 }
     }
 
     func tag(color: String) -> some View {
         Button {
-            pickedColor = Color(color)
+            viewModel.pickedColor = color
         } label : {
             Circle()
                 .strokeBorder(Color.black, lineWidth: 1)
@@ -79,22 +82,21 @@ struct PostActivityView: View {
         .cornerRadius(10)
     }
     func activityDetail(activityInput: Binding<String>, descriptionInput: Binding<String>) -> some View {
-       
         ZStack {
-            pickedColor
+            Color(UIColor(named: viewModel.pickedColor)!)
                 .cornerRadius(20)
                 .padding()
-                
+            
             VStack(spacing: 20) {
                 Text("Activity:")
                     .foregroundColor(Color("accent"))
                     .font(.body)
-               
+                
                 textField(placeholder: "", input: activityInput, isEmpty: true)
                     .padding()
                 Text("Description:(optional)")
                     .font(.body)
-               
+                
                 textField(placeholder: "", input: descriptionInput, isEmpty: true)
                     .padding()
                 Text("number of people who can join:")
@@ -104,9 +106,17 @@ struct PostActivityView: View {
                 Text("Tag:")
                     .font(.body)
                 tagPanel
-                   
+                    .padding()
+            }
+          
+            .overlay {
+                if viewModel.isLoading {
+                    LoadingView(color: UIColor(named: viewModel.pickedColor)!)
+                }
             }
             .padding()
+            
+            
         }
         .padding()
     }

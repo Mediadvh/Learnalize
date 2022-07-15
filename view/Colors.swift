@@ -19,4 +19,6 @@ struct Colors {
     static let activityCard4Accent = UIColor(named: "activityCard 4 accent")!
     static let login = UIColor(named: "login")!
     static let register = UIColor(named: "register")!
+    static let green = UIColor(named: "green")!
+    static let blue = UIColor(named: "blue")!
 }

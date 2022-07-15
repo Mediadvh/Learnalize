@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ActivityView: View {
     @Environment(\.dismiss) var dismiss
+    @State var activitiyName = "Loading"
     var participants = ["john doe"]
     var colortag = Colors.activityCard1
     var colortagAccent = Colors.activityCard1Accent
@@ -21,7 +22,7 @@ struct ActivityView: View {
             
             VStack {
                 
-                Text("Activity name")
+                Text(activitiyName)
                     .font(.largeTitle)
                    
                 whiteboard

@@ -10,119 +10,92 @@ import FirebaseFirestore
 import FirebaseStorage
 import SwiftUI
 import FirebaseFirestoreSwift
-
+enum collectionMode { case following, follower }
 class FireStoreManager {
     
     static let shared = FireStoreManager()
     let auth: Auth
     let firestore: Firestore
     let storage: Storage
+    let userCollection: CollectionReference
+    let followerCollection: CollectionReference
+    let followingCollection: CollectionReference
     private init() {
          auth = Auth.auth()
          storage = Storage.storage()
          firestore = Firestore.firestore()
+         userCollection = firestore.collection("users")
+         followerCollection = firestore.collection("followers")
+         followingCollection = firestore.collection("followings")
+        
     }
     
-    
-//    func downloadImage(link: String, completionHandler: @escaping (UIImage?, Error?) -> Void) {
-//        guard let url = URL(string: link) else {
-//            return
-//        }
-//        URLSession.shared.dataTask(with: url) { data, _ ,error in
-//            if let data = data, error == nil {
-//                let picture = UIImage(data: data)
-//                completionHandler(picture, nil)
-//            } else {
-//                completionHandler(nil, error)
-//            }
-//        }
-//    }
-//    
-    
-    func fetchUser(userId: String, completionHandler: @escaping (_ user: User?, _ error: Error?) -> Void) {
+    //MARK: - User related
+    func fetchUser(with userId: String,  completionHandler: @escaping (User?,Error?) -> Void) {
         
-       
-        let docRef = firestore.collection("users").document(userId)
-  
-        docRef.getDocument { (document, error) in
-            
+        let db = FireStoreManager.shared
+        
+        let docRef = db.userCollection.document(userId)
+        
+        docRef.getDocument { document, error in
+            guard error == nil, let document = document else {
+                print("Error getting document: \(error?.localizedDescription ?? "N/A")")
+                return
+            }
+            // let decodedUser = try document.data(as: User.self)
+            let fetchedUser =  Converter.DataToUser(dict: document.data()!)
+            completionHandler(fetchedUser,nil)
+        }
+    }
+
+
+    
+ 
+    
+    func getCount(of: collectionMode,id: String ,completionHandler: @escaping (Int?) -> Void) {
+        var collection1: CollectionReference
+        var collectionName2: String
+        if of == .follower {
+            collection1 = followerCollection
+            collectionName2 = "user-followers"
+        } else {
+            collection1 = followingCollection
+            collectionName2 = "user-following"
+        }
+        collection1.document(id).collection(collectionName2).getDocuments()
+        {
+            (querySnapshot, err) in
+
+            if let err = err
+            {
+                print("Error getting documents: \(err)");
+            }
+            else
+            {
+                var count = 0
+                for _ in querySnapshot!.documents {
+                    count += 1
+//                    print("\(document.documentID) => \(document.data())");
+                }
+               completionHandler(count)
+            }
+        }
+    }
+    
+    func updateCount(of: String, doc: String,newCount: Int, completionHandler: @escaping (Error?) -> Void) {
+        
+        self.firestore.collection(of).document(doc).updateData(["count": newCount]) { error in
             guard error == nil else {
-                completionHandler(nil, error)
+                completionHandler(error)
                 return
             }
-            
-            if let document = document, document.exists {
-                let data = document.data()
-                if let data = data {
-
-                    print("data", data)
-
-                    let email = data["email"] as? String ?? ""
-                    let fullname = data["fullName"] as? String ?? ""
-                    let picture = data["picture"] as? String ?? ""
-                    let username = data["username"] as? String ?? ""
-
-
-                    let user = User(fullName: fullname, picture: picture, email: email, password: "N/A", username: username, id: userId)
-                    completionHandler(user, nil)
-                }
-                
-               
-            }
-        }
-    }
-    
-    func save(image: UIImage, completionHandler: @escaping (URL?, Error?) -> Void){
-        
-        guard let uid = auth.currentUser?.uid else { return }
-        let ref = storage.reference(withPath: uid)
-        let imageData = image.jpegData(compressionQuality: 0.5)
-        guard let imageData = imageData else { return }
-        ref.putData(imageData, metadata: nil) { metadata, error in
-            if let error = error {
-                completionHandler(nil,error)
-                return
-            }
-            
-            ref.downloadURL { url, error in
-                if let error = error {
-                    completionHandler(nil,error)
-                    return
-                }
-                completionHandler(url,nil)
-            }
-        }
-                
-    }
-    func editPicture(url: String) {
-        if let id = auth.currentUser?.uid {
-            let docid = firestore.collection("users").document(id).documentID
-            firestore.collection("users").document(docid).updateData(["picture":url])
+            completionHandler(nil)
         }
         
     }
-    func save(user: User, with imageData: String, completionHandler: @escaping (Bool, Error?) -> Void){
-       
-        guard let uid = FireStoreManager.shared.auth.currentUser?.uid else { return }
-        let userData = ["fullName": user.fullName, "picture": imageData,"email": user.email,"password": user.password,"username": user.username,"id":uid]
 
-//
-        FireStoreManager.shared.firestore.collection("users").document(uid).setData(userData) { error in
-            if let error = error {
-                completionHandler(true, error)
-                return
-            }
-
-            completionHandler(true, nil)
-        }
-        
-       
-        
-    }
-    
+    // MARK: -Activity related
     func save(activity: Activity, completionHandler: @escaping (Bool, Error?) -> Void){
-       
-        guard let uid = FireStoreManager.shared.auth.currentUser?.uid else { return }
        
         let userData = [
             "uid": activity.uid,
@@ -130,7 +103,8 @@ class FireStoreManager {
             "description": activity.description,
             "participantsLimit": activity.participantsLimit,
             "creationDate": activity.creationDate!,
-            "hostId": activity.hostId!
+            "hostId": activity.hostId!,
+            "tagColor": activity.tagColor
         ] as [String : Any]
       
     
@@ -222,5 +196,19 @@ class FireStoreManager {
             
         }
     }
+//    
+//    fileprivate func fetchActivitiesOf(_ querySnapshot: QuerySnapshot?, completionHandler: ([Activity]?, Error?) -> Void) {
+//        var feedActivities = [Activity]()
+//        for document in querySnapshot!.documents {
+//            print("\(document.documentID) => \(document.data())");
+//            // fetch activity for this following
+//            fetchActivities(filter: document.documentID) { activities, error in
+//                if let activities = activities {
+//                    feedActivities.append(contentsOf: activities)
+//                    completionHandler(feedActivities,nil)
+//                }
+//            }
+//        }
+//    }
 
 }

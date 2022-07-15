@@ -44,13 +44,14 @@ func activityCard(isAbleToJoin: Bool,showsUsername: Bool,activity: Activity, col
 func activityList(isAbleToJoin: Bool,showsUsername: Bool ,model: [Activity]) -> some View {
   
     List {
-        let colors = ["activityCard 1", "activityCard 2", "activityCard 3", "activityCard 4"]
+        //let colors = ["activityCard 1", "activityCard 2", "activityCard 3", "activityCard 4"]
         ForEach(model, id: \.self) { item in
             NavigationLink(destination: ActivityView()) {
-                activityCard(isAbleToJoin: isAbleToJoin,showsUsername: showsUsername,activity: item, color: Color(colors.randomElement() ?? "activityCard 1"), participants: 10)
+                activityCard(isAbleToJoin: isAbleToJoin,showsUsername: showsUsername,activity: item, color: Color(item.tagColor), participants: 10)
             }
         }  .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
+        
     }
     .refreshable {
         

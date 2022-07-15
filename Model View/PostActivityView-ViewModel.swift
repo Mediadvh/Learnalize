@@ -11,22 +11,27 @@ extension PostActivityView {
         @Published var name = ""
         @Published var description = ""
         @Published var participantsLimit = 1
-        @Published var showingAlert = false
-        
+        @Published var success = false
+        @Published var showFailAlert = false
+        @Published var isLoading = false
+        @Published var pickedColor = "activityCard 1"
         func post() {
-            
+            isLoading = true
             if let userId = Authentication.shared.getCurrentUserUid() {
                 let uuid = UUID().uuidString
-                let activity = Activity(uid: userId + uuid, name: name, description: description, participantsLimit: participantsLimit)
+                let activity = Activity(uid: userId + uuid, name: name, description: description, participantsLimit: participantsLimit, tagColor: pickedColor)
                 FireStoreManager.shared.save(activity: activity) { success, error in
                     if success {
-                        self.showingAlert = true
+                        self.success = true
                         self.name = ""
                         self.description = ""
                         self.participantsLimit = 1
-                        print("successfully posted the activity to database")
-                        
+                        self.isLoading = false
+                    } else {
+                        self.success = true
+                        self.isLoading = false
                     }
+                    
                 }
             }
            

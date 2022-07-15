@@ -14,10 +14,11 @@ struct Activity: Codable {
     internal var name: String
     internal var participantsLimit: Int
     internal var uid: String
+    internal var tagColor: String
  
     
     // MARK: initializer
-    init(uid: String,name: String, description: String, participantsLimit: Int) {
+    init(uid: String,name: String, description: String, participantsLimit: Int, tagColor: String = "activityCard 1") {
         self.uid = uid
         self.name = name
         self.description = description
@@ -30,6 +31,7 @@ struct Activity: Codable {
         let date = Date.now
         let formattedDate = date.formatted(date: .complete, time: .omitted)
         self.creationDate = formattedDate
+        self.tagColor = tagColor
         
     }
     // MARK: methods
