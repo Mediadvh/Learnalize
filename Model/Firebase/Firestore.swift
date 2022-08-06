@@ -9,6 +9,7 @@ import Firebase
 import FirebaseFirestore
 import FirebaseStorage
 import SwiftUI
+
 import FirebaseFirestoreSwift
 enum collectionMode { case following, follower }
 class FireStoreManager {
@@ -43,7 +44,11 @@ class FireStoreManager {
                 return
             }
             // let decodedUser = try document.data(as: User.self)
-            let fetchedUser =  Converter.DataToUser(dict: document.data()!)
+            guard let data = document.data() else {
+                print("Error getting document info: \(error?.localizedDescription ?? "N/A")")
+                return
+            }
+            let fetchedUser =  Converter.DataToUser(dict: data)
             completionHandler(fetchedUser,nil)
         }
     }
@@ -95,53 +100,55 @@ class FireStoreManager {
     }
 
     // MARK: -Activity related
-    func save(activity: Activity, completionHandler: @escaping (Bool, Error?) -> Void){
-       
-        let userData = [
-            "uid": activity.uid,
-            "name": activity.name,
-            "description": activity.description,
-            "participantsLimit": activity.participantsLimit,
-            "creationDate": activity.creationDate!,
-            "hostId": activity.hostId!,
-            "tagColor": activity.tagColor
-        ] as [String : Any]
-      
-    
-        FireStoreManager.shared.firestore.collection("activities").document(activity.uid).setData(userData) { error in
-            if let error = error {
-                completionHandler(true, error)
-                return
-            }
-           
-            completionHandler(true, nil)
-        }
-    }
+//    func save(activity: Activity, completionHandler: @escaping (Bool, Error?) -> Void){
+//
+//        let userData = [
+//            "uid": activity.uid,
+//            "name": activity.name,
+//            "description": activity.description,
+//            "participantsLimit": activity.participantsLimit,
+//            "createdAt": activity.createdAt!,
+//            "hostId": activity.hostId!,
+//            "tagColor": activity.tagColor
+//        ] as [String : Any]
+//
+//
+//        FireStoreManager.shared.firestore.collection("activities").document(activity.uid).setData(userData) { error in
+//            if let error = error {
+//                completionHandler(true, error)
+//                return
+//            }
+//
+//            completionHandler(true, nil)
+//        }
+//    }
    
-    func fetchActivities(filter hostId: String, completionHandler: @escaping ([Activity]?, Error?) -> Void) {
-        let docRefs = firestore.collection("activities").whereField("hostId", in: [hostId]).limit(to: 10)
+    func fetchActivities(filter hostId: String, completionHandler: @escaping ([Activity]?,Int?, Error?) -> Void) {
+        let docRefs = firestore.collection("activities").whereField("hostId", in: [hostId]).limit(to: 2000 )
         docRefs.getDocuments { querySnapshot, error in
             guard error == nil else {
-                completionHandler(nil,error)
+                completionHandler(nil,nil,error)
                 print("Error getting documents: \(error?.localizedDescription)")
                 return
             }
             
             var activities = [Activity]()
+            var activitysCount = 0
             let docs = querySnapshot!.documents
             activities = docs.compactMap { queryDocumentSnapshot -> Activity? in
                 
                 do {
+                    activitysCount+=1
                     return try queryDocumentSnapshot.data(as: Activity.self)
                     
                 } catch {
                     print(error)
-                    completionHandler(nil,error)
+                    completionHandler(nil,nil,error)
                     return nil
             
                 }
             }
-            completionHandler(activities,nil)         
+            completionHandler(activities,activitysCount,nil)
         }
     }
     func searchActivity(by name: String, completionHandler: @escaping ([Activity]?, Error?) -> Void) {
@@ -155,16 +162,16 @@ class FireStoreManager {
             
             var activities = [Activity]()
             let docs = querySnapshot!.documents
-            activities = docs.compactMap { queryDocumentSnapshot -> Activity? in
+            activities = docs.compactMap { queryDocumentSnapshot in
                 
                 do {
                     return try queryDocumentSnapshot.data(as: Activity.self)
-                    
+
                 } catch {
                     print(error)
                     completionHandler(nil,error)
                     return nil
-            
+
                 }
             }
             completionHandler(activities,nil)
@@ -211,4 +218,62 @@ class FireStoreManager {
 //        }
 //    }
 
+    // MARK: -Chat related
+   
+    
+    func fetchMessages(senderId: String, receiverId: String, completion: @escaping ([Message]?,Error?) -> Void) {
+        var messages = [Message]()
+        firestore.collection("messages").document(senderId).collection(receiverId).order(by: "timestamp").addSnapshotListener { querySnapshot, error in
+            guard error == nil else {
+                print("couldn't fetch messages")
+                completion(nil,error)
+                return
+            }
+
+            querySnapshot?.documentChanges.forEach({ change in
+                if change.type == .added {
+                    let data = change.document.data()
+                    let message = Message(data: data)
+                    messages.append(message)
+                }
+            })
+
+            completion(messages, nil)
+           
+        }
+        
+    }
+    func fetchRecentMessages(userId: String, completion: @escaping ([Chat]?,Error?) -> Void) {
+        var recentChat = [Chat]()
+        firestore.collection("recent_messages").document(userId).collection("messages").order(by: "timestamp").addSnapshotListener { querySnapshot, error in
+            guard error == nil else {
+                print("couldn't fetch messages")
+                completion(nil, error)
+                return
+            }
+
+            querySnapshot?.documentChanges.forEach({ change in
+                if change.type == .added {
+                    let data = change.document.data()
+                    let message = Message(data: data)
+                    print(message.receiverId)
+                    self.fetchUser(with: message.receiverId) { user, error in
+                        guard let user = user, error == nil else {
+                            return
+                        }
+                        let chat = Chat(other: user, recentMessage: message)
+                        recentChat.append(chat)
+                        completion(recentChat, nil)
+                      
+                    }
+                
+                   
+                }
+               
+            })
+           
+
+        }
+    }
+   
 }

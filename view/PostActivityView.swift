@@ -19,9 +19,12 @@ struct PostActivityView: View {
             activityDetail(activityInput: $viewModel.name, descriptionInput: $viewModel.description)
             postButton
             Spacer(minLength: 20)
+            
         }
         .fullScreenCover(isPresented: $viewModel.success) {
-            ActivityView()
+            if let activity = viewModel.activity, let token = viewModel.token {
+                Room(activity: activity, userId: activity.hostId, token: token)
+            }
         }
         
         
@@ -30,8 +33,8 @@ struct PostActivityView: View {
     // MARK: UIElements
     var postButton: some View {
         Button {
-            // alert
-            
+          
+//s            viewModel.success = true
             viewModel.post()
         } label : {
             Text("post")
@@ -89,7 +92,7 @@ struct PostActivityView: View {
             
             VStack(spacing: 20) {
                 Text("Activity:")
-                    .foregroundColor(Color("accent"))
+                    .foregroundColor(Colors.accent)
                     .font(.body)
                 
                 textField(placeholder: "", input: activityInput, isEmpty: true)
@@ -111,7 +114,7 @@ struct PostActivityView: View {
           
             .overlay {
                 if viewModel.isLoading {
-                    LoadingView(color: UIColor(named: viewModel.pickedColor)!)
+                    LoadingView(color:Color(viewModel.pickedColor))
                 }
             }
             .padding()

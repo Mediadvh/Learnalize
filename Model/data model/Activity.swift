@@ -8,37 +8,53 @@
 import Foundation
 struct Activity: Codable {
     // MARK: properties
-    internal var creationDate: String!
+    internal var createdAt: String!
     internal var description: String
-    internal var hostId: String!
+    internal var hostId: String! // first time it's created, add a host id to this
     internal var name: String
     internal var participantsLimit: Int
-    internal var uid: String
+    internal var uid: String! // room id
     internal var tagColor: String
- 
-    
+    internal var active: Bool = true
+
     // MARK: initializer
-    init(uid: String,name: String, description: String, participantsLimit: Int, tagColor: String = "activityCard 1") {
-        self.uid = uid
+    init(name: String, description: String, participantsLimit: Int, tagColor: String = "activityCard 1", createdAt: String, uid: String, active: Bool,hostId: String) {
         self.name = name
         self.description = description
         self.participantsLimit = participantsLimit
-        
-        // assign current user id
-        self.hostId = Authentication.shared.getCurrentUserUid()
-      
-        // creation date
-        let date = Date.now
-        let formattedDate = date.formatted(date: .complete, time: .omitted)
-        self.creationDate = formattedDate
         self.tagColor = tagColor
-        
+        self.createdAt = createdAt
+        self.uid = uid
+        self.active = active
+        self.hostId = hostId
     }
+    
+    
     // MARK: methods
-    private func create() {
-        // add to database
-        //
+    private func create(completionHandler: @escaping (Bool, Error?) -> Void) {
+        // create room
+        
+        // assign id
+        
+        save(completionHandler: completionHandler)
     }
+    
+    func save(completionHandler: @escaping (Bool, Error?) -> Void){
+        
+        let activity = Converter.ActivityToData(activity: self)
+      
+    
+        FireStoreManager.shared.firestore.collection("activities").document(uid).setData(activity) { error in
+            if let error = error {
+                completionHandler(true, error)
+                return
+            }
+           
+            completionHandler(true, nil)
+        }
+    }
+    
+   
     private func end() {
 
     }
@@ -48,5 +64,7 @@ struct Activity: Codable {
 }
 
 extension Activity: Hashable {
+   
+    
     
 }

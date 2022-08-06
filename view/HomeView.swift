@@ -26,16 +26,9 @@ struct HomeView: View {
                         .navigationBarHidden(true)
                         Spacer()
                         
-                        HStack {
-                            NavigationLink(destination: ProfileView()) {
-                                profileButton
-                            }
-                            logoutButton
-                            
-                        }
                     }
                     if let activities = viewModel.activities {
-                        activityList(isAbleToJoin: true, showsUsername: true, model: activities)
+                        activityList(activities: activities, isAbleToJoin: true, showsUsername: true)
                       
                         
                     } else if viewModel.isLoading {
@@ -54,14 +47,7 @@ struct HomeView: View {
             .navigationBarHidden(true)
             
         }
-        .alert("Failed to logout!", isPresented: $viewModel.failLogOut, actions: {
-            Button("Ok", role: .cancel) {
-                viewModel.failLogOut = false
-            }
-        })
-        .fullScreenCover(isPresented: $viewModel.loggedOut) {
-            RegisterView()
-        }
+        
         
     }
     
@@ -71,17 +57,10 @@ struct HomeView: View {
             .font(.largeTitle)
             .padding()
     }
-    var logoutButton: some View {
-        Button {
-            viewModel.logout()
-        } label: {
-            Text("logout")
-                .font(.body)
-                .padding()
-                .foregroundColor(.red)
-            
-        }
-    }
+    
+    
+    
+
 }
 
 

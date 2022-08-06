@@ -61,6 +61,8 @@ class User: Codable {
 
 extension User: Identifiable {
     
+    
+    
 }
 // user initialization
 extension User {
@@ -194,12 +196,13 @@ extension User {
         }
     }
     
-    internal func fetchFollowings(completionHandler: @escaping ([User]?, Error?) -> Void ) {
+    internal func fetchFollowings(completionHandler: @escaping ([User]?,Int?, Error?) -> Void ) {
+        var followingsCount = 0
         let db = FireStoreManager.shared
         db.followingCollection.document(id).collection("user-followings").getDocuments { querySnapshot, error in
             guard error == nil else {
                 print("Error getting documents: \(error)");
-                completionHandler(nil, error)
+                completionHandler(nil,nil, error)
                 return
             }
             var users = [User]()
@@ -211,17 +214,19 @@ extension User {
                         return
                     }
                     users.append(user)
-                    completionHandler(users, nil)
+                    followingsCount += 1
+                    completionHandler(users,followingsCount, nil)
                 }
             }
         }
     }
-    internal func fetchFollowers(completionHandler: @escaping ([User]?,Error?) -> Void ) {
+    internal func fetchFollowers(completionHandler: @escaping ([User]?,Int?,Error?) -> Void ) {
+        var followersCount = 0
         let db = FireStoreManager.shared
         db.followerCollection.document(id).collection("user-followers").getDocuments { querySnapshot, error in
             guard error == nil else {
                 print("Error getting documents: \(error)");
-                completionHandler(nil, error)
+                completionHandler(nil,nil, error)
                 return
             }
             var users = [User]()
@@ -233,7 +238,8 @@ extension User {
                         return
                     }
                     users.append(user)
-                    completionHandler(users, nil)
+                    followersCount+=1
+                    completionHandler(users,followersCount, nil)
                 }
             }
         }
@@ -259,7 +265,7 @@ extension User {
             for document in querySnapshot!.documents {
             
                 // fetch activity for this following
-                db.fetchActivities(filter: document.documentID) { activities, error in
+                db.fetchActivities(filter: document.documentID) { activities, _ ,error  in
                     if let activities = activities {
                         feedActivities.append(contentsOf: activities)
                         completionHandler(feedActivities,nil)

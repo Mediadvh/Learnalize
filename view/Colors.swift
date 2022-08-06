@@ -7,8 +7,9 @@
 
 import SwiftUI
 struct Colors {
-    static let background = UIColor(named: "background")!
-    static let accent = UIColor(named: "accent")!
+    
+    static let background = Color("background")
+    static let accent = Color("accent")
     static let activityCard1 = UIColor(named: "activityCard 1")!
     static let activityCard2 = UIColor(named: "activityCard 2")!
     static let activityCard3 = UIColor(named: "activityCard 3")!
@@ -17,8 +18,14 @@ struct Colors {
     static let activityCard2Accent = UIColor(named: "activityCard 2 accent")!
     static let activityCard3Accent = UIColor(named: "activityCard 3 accent")!
     static let activityCard4Accent = UIColor(named: "activityCard 4 accent")!
-    static let login = UIColor(named: "login")!
-    static let register = UIColor(named: "register")!
-    static let green = UIColor(named: "green")!
-    static let blue = UIColor(named: "blue")!
+    static let login = Color("login")
+    static let register = Color("register")
+    static let green = Color.green
+    static let blue = Color.blue
+    static let white = Color.white
+    static let black = Color.black
+    static let editButton = Color("editButton")
+    static let username = Color("username")
+    
+    
 }

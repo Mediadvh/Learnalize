@@ -12,8 +12,10 @@ import SDWebImageSwiftUI
 
 struct SearchView: View {
     @StateObject var viewModel = ViewModel()
+    
     var body: some View {
-        // TODO: fix navigation problem
+        
+        
         NavigationView {
             VStack {
                 SearchBar(placeholder: "Search", text: $viewModel.text)
@@ -31,21 +33,20 @@ struct SearchView: View {
                 if viewModel.isLoading {
                     LoadingView(color: Colors.background)
                 } else if viewModel.mode == .searchActivity && viewModel.foundResult == true {
-                    activityList(isAbleToJoin: true, showsUsername: true, model: viewModel.resultActivities)
+                    activityList(activities: viewModel.resultActivities, isAbleToJoin: true, showsUsername: true)
                 } else if viewModel.mode == .searchUser && viewModel.foundResult == true {
                     
-                    UserList(users: viewModel.resultUsers, selectable: true)
+                    UserResultView(users: viewModel.resultUsers,  destination: .profileView)
                     
                 } else if viewModel.foundResult == false && viewModel.isLoading == false{
                     Spacer()
                     Text("results not found!")
                     Spacer()
                 }
-            }
+                
+            }.navigationBarHidden(true)
         }
-        
     }
-    
     
 }
 

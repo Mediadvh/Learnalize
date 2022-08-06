@@ -20,20 +20,7 @@ func usernameButton(imageName: String) -> some View {
     }
 }
 
-var joinButton: some View {
-    Button {
-       
-       
-    } label: {
-        VStack {
-            Image(systemName: "plus.circle.fill")
-                .font(.largeTitle)
-            Text("join")
-                .font(.body)
-                
-        }
-    }
-}
+
 
 func textField(placeholder: String, input: Binding<String>, isEmpty: Bool) -> some View {
 
@@ -110,10 +97,10 @@ struct ImagePicker: UIViewControllerRepresentable {
     }
 }
 struct LoadingView: View {
-    var color: UIColor
+    var color: Color
     var body: some View {
         ZStack {
-            Color(color)
+            color
                 .opacity(0.8)
                 .ignoresSafeArea()
             ProgressView()

@@ -14,6 +14,7 @@ struct ActivityView: View {
     var colortag = Colors.activityCard1
     var colortagAccent = Colors.activityCard1Accent
     @State var showParticipants = false
+    
     var body: some View {
         ZStack {
             // TODO: replace with the activity color

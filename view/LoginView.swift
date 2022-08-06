@@ -14,7 +14,7 @@ struct LoginView: View {
     var body: some View {
         ZStack {
             
-            Color(Colors.login)
+            Colors.login
                 .ignoresSafeArea()
             VStack {
                 Text("LEARNALIZE")

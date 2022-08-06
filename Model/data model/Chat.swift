@@ -6,24 +6,33 @@
 //
 
 import Foundation
-struct chat {
+import Firebase
+struct Chat {
     // MARK: properties
-    private var user1: User
-    private var user2: User
-    private var date: Date
-    private var sharedMessages: [Message]?
-    private var sharedFiles: [File]?
+    internal var other: User
+    internal var recentMessage: Message
+ 
+    
     
     // MARK: initializer
-    init(user1: User, user2: User, date: Date) {
-        self.user1 = user1
-        self.user2 = user2
-        self.date = date
+    init(other: User, recentMessage: Message) {
+        self.other = other
+        self.recentMessage = recentMessage
+        
+        
     }
     
     // MARK: methods
     
     
     
+    
+}
+extension Chat: Identifiable {
+    var id: ObjectIdentifier {
+        return other.id
+    }
+    
+   
     
 }
