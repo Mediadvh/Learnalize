@@ -4,56 +4,114 @@
 //
 //  Created by Media Davarkhah on 1/2/1401 AP.
 //
-
 import SwiftUI
 
-func activityCard(isAbleToJoin: Bool,showsUsername: Bool,activity: Activity, color: Color, participants: Int) -> some View {
-    return VStack (alignment: .leading) {
-        if(showsUsername) {
-            usernameButton(imageName: "person.circle.fill")
-        }
+// activity cards
+
+struct activityCard: View {
+    var isAbleToJoin: Bool
+    var showsUsername: Bool
+    var selectedItem: Activity
+    @State var token: String? = ""
+    @State var join: Bool = false
+    
+    var body: some View {
         
-       ZStack {
-           color
-               .cornerRadius(10)
-           VStack {
-               Text("studying \(Text("\(activity.name)").bold()), do you want to join me?")
-                   .font(.title2)
-                   .fixedSize(horizontal: false, vertical: true)
-                   .padding()
-               Spacer(minLength: 5)
-               HStack {
-                   Text("\(participants) participants")
-                       .font(.body)
-                       .padding()
-                   Spacer()
-                   if(isAbleToJoin) {
-                       joinButton
-                           .padding()
-                           .foregroundColor(Color("background"))
-                   }
-               }
-               Spacer(minLength: 10)
-           }
+        VStack (alignment: .leading) {
+            if(showsUsername) {
+                usernameButton(imageName: "person.circle.fill")
+            }
+            
+            ZStack {
+                Color(selectedItem.tagColor)
+                    .cornerRadius(10)
+                VStack {
+                    Text("studying \(Text("\(selectedItem.name)").bold()), do you want to join me?")
+                        .font(.title2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding()
+                    Spacer(minLength: 5)
+                    HStack {
+                        Text("10 participants")
+                            .font(.body)
+                            .padding()
+                        Spacer()
+                        if(isAbleToJoin) {
+                            joinButton(activity: selectedItem)
+                                .padding()
+                                .foregroundColor(Color("background"))
+                        }
+                    }
+                    Spacer(minLength: 10)
+                }
+                
+            }
             
         }
+        .fullScreenCover(isPresented: $join) {
+            if let token = token {
+                Room(activity: selectedItem, userId: Authentication.shared.getCurrentUserUid()!, token: token)
+            } else {
+                Text("nothing to show here except: \(token ?? "no token")")
+            }
+        }
+
+        
+    }
+    
+    func joinButton(activity: Activity) -> some View {
+        Button {
+            RoomAPIHandler.roomForGuest(roomId: activity.uid, userId: Authentication.shared.getCurrentUserUid()!) { res, error in
+                guard let res = res else {
+                    return
+                }
+                
+                DispatchQueue.main.async {
+                    self.token = res.token
+                    print(res.token)
+                    self.join = true
+                    print("\(self.selectedItem.name) selected")
+                    
+                   
+                }
+              
+            }
+           
+        } label: {
+            VStack {
+                Image(systemName: "plus.circle.fill")
+                    .font(.largeTitle)
+                Text("join")
+                    .font(.body)
+                
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
+       
+       
     }
 }
 
-// TODO: fix duality
-func activityList(isAbleToJoin: Bool,showsUsername: Bool ,model: [Activity]) -> some View {
-  
-    List {
-        //let colors = ["activityCard 1", "activityCard 2", "activityCard 3", "activityCard 4"]
-        ForEach(model, id: \.self) { item in
-            NavigationLink(destination: ActivityView()) {
-                activityCard(isAbleToJoin: isAbleToJoin,showsUsername: showsUsername,activity: item, color: Color(item.tagColor), participants: 10)
-            }
-        }  .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
+
+struct activityList: View {
+    var activities: [Activity]
+    var isAbleToJoin: Bool
+    var showsUsername: Bool
+    
+    @State private var selectedItem: Activity?
+    var body: some View {
+        
+        ForEach(activities, id: \.self) { item in
+            
+            activityCard(isAbleToJoin: isAbleToJoin, showsUsername: showsUsername, selectedItem: item)
+                
+        }
+        .onDelete { index in
+            print("DELETED THIS...")
+        }
+        
+            
         
     }
-    .refreshable {
-        
-    }
+    
 }

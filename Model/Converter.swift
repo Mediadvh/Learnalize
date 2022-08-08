@@ -23,5 +23,32 @@ struct Converter {
         return  ["fullName": user.fullName, "picture": user.picture,"email": user.email,"password": user.password,"username": user.username,"id":user.id]
 
     }
+    
+    static func DataToActivity(dict: [String: Any]) -> Activity {
+        let createdAt = dict["createdAt"] as? String ?? ""
+        let description = dict["description"] as? String ?? ""
+        let hostId = dict["hostId"] as? String ?? ""
+        let name = dict["name"] as? String ?? ""
+        let participantsLimit = dict["participantsLimit"] as? Int ?? 1
+        let uid = dict["uid"] as? String ?? ""
+        let tagColor = dict["tagColor"] as? String ?? ""
+        let active = dict["active"] as? Bool ?? true
 
+        return Activity(name: name, description: description, participantsLimit: participantsLimit, tagColor: tagColor, createdAt: createdAt, uid: uid, active: active, hostId: hostId)
+        
+        
+        
+    }
+
+    static func ActivityToData(activity: Activity) -> [String : Any] {
+        return  ["createdAt": activity.createdAt,
+                 "description": activity.description,
+                 "hostId": activity.hostId,
+                 "name": activity.name,
+                 "participantsLimit": activity.participantsLimit,
+                 "uid":activity.uid,
+                 "tagColor": activity.tagColor,
+                 "active": activity.active]
+
+    }
 }

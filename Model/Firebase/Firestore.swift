@@ -98,6 +98,52 @@ class FireStoreManager {
         }
         
     }
+    
+    func deleteUser(with userId: String) {
+        // delete the user
+        firestore.collection("users").document(userId).delete { error in
+            guard error == nil else {
+                return
+            }
+            print("deleted user with userId: \(userId)")
+        }
+        // delete it from followers
+        firestore.collection("followers").document(userId).delete { error in
+            guard error == nil else {
+                return
+            }
+            print("deleted user from followers with user id: \(userId)")
+        }
+        // delete it from followings
+        firestore.collection("followings").document(userId).delete { error in
+            guard error == nil else {
+                return
+            }
+            print("deleted user from followings with user id: \(userId)")
+        }
+        // delete it from recent messages
+        firestore.collection("recent_messages").document(userId).delete { error in
+            guard error == nil else {
+                return
+            }
+            print("deleted user from recent messages with user id: \(userId)")
+        }
+        // delete it from messages
+        firestore.collection("messages").document(userId).delete { error in
+            guard error == nil else {
+                return
+            }
+            print("deleted user from messages with user id: \(userId)")
+        }
+        
+        // delete activities made by it
+        firestore.collection("activities").document(userId).delete { error in
+            guard error == nil else {
+                return
+            }
+            print("deleted user from activities with user id: \(userId)")
+        }
+    }
 
     // MARK: -Activity related
 //    func save(activity: Activity, completionHandler: @escaping (Bool, Error?) -> Void){
@@ -180,6 +226,7 @@ class FireStoreManager {
     
     func searchUser(by username: String, completionHandler: @escaping ([User]?, Error?) -> Void) {
         let docRefs = firestore.collection("users").whereField("username", in: [username]).limit(to: 5)
+
         
         docRefs.getDocuments { querySnapshot, error in
             guard error == nil else {
@@ -275,5 +322,6 @@ class FireStoreManager {
 
         }
     }
+    
    
 }

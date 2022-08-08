@@ -9,36 +9,42 @@ import Foundation
 import UIKit
 import SDWebImage
 import SDWebImageSwiftUI
+
 enum followButtonState:String { case follow = "Follow", following = "Following", loading = "Loading..." }
 extension ProfileView {
     @MainActor class ViewModel: ObservableObject {
         
+        @Published var showChat: Bool = false
         @Published var userIDToShow: String? = Authentication.shared.getCurrentUserUid()
-        @Published var user: User!
+        @Published var user: User?
         @Published var webPicture: WebImage?
         @Published var defaultPicture = UIImage(named: "profile")!
         @Published var username: String = "Loading..."
         @Published var picFromWeb = false
         @Published var activities: [Activity]?
         @Published var success = false
-        @Published var canFollow = false
+        @Published var canFollow: Bool?
         @Published private(set) var followButtonState: followButtonState = .follow
-        @Published private(set) var followColor = Colors.blue
+        @Published private(set) var followBackgroundColor = Colors.blue
+      
         @Published private(set) var isFollowed = false
         @Published private(set) var followerCount = 0
         @Published private(set) var followingCount = 0
+        @Published private(set) var activityCount = 0
         @Published private(set) var followings = [User]()
         @Published private(set) var followers = [User]()
         @Published var showsFollowers = false
         @Published var showsFollowings = false
+        @Published var loggedOut = false
+        @Published var failLogOut = false
         
         func setup() {
             fetchUser { user, error in
                 guard let user = user ,error == nil else { return }
                 self.user = user
                 self.setupUser()
-                self.getFollowerCount()
-                self.getFollowerCount()
+                self.getFollowers()
+                self.getFollowings()
                 self.checkIsFollowed()
             }
         }
@@ -51,7 +57,7 @@ extension ProfileView {
             FireStoreManager.shared.fetchUser(with: userId ,completionHandler: completionHandler)
         }
         func setupUser() {
-            if let pic = user.picture, let username = user.username {
+            if let pic = user?.picture, let username = user?.username {
                 self.username = username
                 guard let url = URL(string: pic) else { return }
                 self.webPicture = WebImage(url: url)
@@ -72,6 +78,8 @@ extension ProfileView {
                 if user.id != curUser.id {
                     self.canFollow = true
                     return
+                } else {
+                    self.canFollow = false
                 }
             }
         }
@@ -87,7 +95,7 @@ extension ProfileView {
                     curUser.follow(userToFollow: user.id) { error in
                         guard error == nil  else { return }
                         self.isFollowed = true
-                        self.followColor = Colors.green
+                        self.followBackgroundColor = Colors.green
                         self.followButtonState = .following
                     }
                 } else if self.followButtonState == .following {
@@ -95,14 +103,14 @@ extension ProfileView {
                     curUser.unfollow(userToUnfollow: user.id) { error in
                         guard error == nil  else { return }
                         self.isFollowed = true
-                        self.followColor = Colors.blue
+                        self.followBackgroundColor = Colors.blue
                         self.followButtonState = .follow
                     }
                 }
             }
         }
         func getFollowerCount() {
-            user.getFollowersCount { count in
+            user?.getFollowersCount { count in
                 if let count = count {
                     print(count)
                     self.followerCount = count
@@ -111,7 +119,7 @@ extension ProfileView {
         }
         
         func getFollowingCount() {
-            user.getFollowingsCount { count in
+            user?.getFollowingsCount { count in
                 if let count = count {
                     print(count)
                     self.followingCount = count
@@ -119,11 +127,14 @@ extension ProfileView {
             }
         }
         func showActivities() {
-            FireStoreManager.shared.fetchActivities(filter: user.id) { activities, error in
-                guard let activities = activities, error == nil else {
+            guard let id = user?.id else { return }
+            
+            FireStoreManager.shared.fetchActivities(filter: id) { activities, count, error in
+                guard let activities = activities, let count = count, error == nil else {
                     return
                 }
                 self.activities = activities
+                self.activityCount = count
             }
         }
         
@@ -134,28 +145,40 @@ extension ProfileView {
                 if res {
                     self.isFollowed = true
                     self.followButtonState = .following
-                    self.followColor = .green
+                    self.followBackgroundColor = .green
                 }
             }
         }
-        func getFollowers() {
-            user.fetchFollowers { users, error in
-                guard let users = users, error == nil else {
+        private func getFollowers() {
+            user?.fetchFollowers { users, count, error in
+                guard let users = users, let count = count, error == nil else {
                     return
                 }
                 self.followers = users
+                self.followerCount = count
             }
         }
-        func getFollowings() {
-            user.fetchFollowings { users, error in
-                guard let users = users, error == nil else {
+        private func getFollowings() {
+            user?.fetchFollowings { users, count, error in
+                guard let users = users, let count = count, error == nil else {
                     return
                 }
                 self.followings = users
+                self.followingCount = count
             }
         }
 
-        
+        func logout() {
+            guard let user = user else {
+                return
+            }
+            if user.logout() {
+                loggedOut = true
+            } else {
+                failLogOut = true
+            }
+            
+        }
     }
 }
 

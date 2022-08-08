@@ -39,22 +39,22 @@ class RoomController: UIViewController {
     //MARK: -UIElements
    
 
-    lazy var stackView: UIStackView = {
-        
-        let result = UIStackView()
-        result.axis = .horizontal
-        
-        view.addSubview(result)
-        result.translatesAutoresizingMaskIntoConstraints = false
-        result.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        result.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        result.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        let heightConstraint =  result.heightAnchor.constraint(equalToConstant: 100)
-        heightConstraint.isActive = true
-        heightConstraint.priority = .defaultLow
-        
-        return result
-    }()
+//    lazy var stackView: UIStackView = {
+//
+//        let result = UIStackView()
+//        result.axis = .horizontal
+//
+//        view.addSubview(result)
+//        result.translatesAutoresizingMaskIntoConstraints = false
+//        result.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+//        result.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+//        result.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+//        let heightConstraint =  result.heightAnchor.constraint(equalToConstant: 100)
+//        heightConstraint.isActive = true
+//        heightConstraint.priority = .defaultLow
+//
+//        return result
+//    }()
     
     lazy var titleLabel: UILabel = {
         let label = UILabel()
@@ -71,6 +71,7 @@ class RoomController: UIViewController {
         button.setTitle("Leave", for: .normal)
         button.backgroundColor = .red
         button.addTarget(self, action: #selector(leaveButtonTapped), for: .touchUpInside)
+        button.layer.cornerRadius = 10
         return button
     }()
     @objc func leaveButtonTapped() {
@@ -104,11 +105,11 @@ class RoomController: UIViewController {
         view.addSubview(leaveButton)
         leaveButton.customTBLTConstraint(top: view.safeAreaLayoutGuide.topAnchor, trailing: view.trailingAnchor, trailingConst: 3)
         
-        // UICollectionView
-//        view.addSubview(collectionView)
-//        collectionView.customTBLTConstraint(bottom: view.bottomAnchor, leading: view.leadingAnchor, trailing: view.trailingAnchor, bottomConst: 0, leadingConst: 0, trailingConst: 0)
-//        collectionView.customHeightWidthConstraint(height: 300)
-        view.addSubview(stackView)
+//        UICollectionView
+        view.addSubview(collectionView)
+        collectionView.customTBLTConstraint(bottom: view.bottomAnchor, leading: view.leadingAnchor, trailing: view.trailingAnchor, bottomConst: 0, leadingConst: 0, trailingConst: 0)
+        collectionView.customHeightWidthConstraint(height: 300)
+//        view.addSubview(stackView)
         
     }
     

@@ -13,8 +13,7 @@ extension HomeView {
         @Published var isLoading = false
         @Published var showsActivityView = false
         @Published var currentUser: User?
-        @Published var loggedOut = false
-        @Published var failLogOut = false
+       
         init() {
             isLoading = true
             Authentication.shared.getCurrentUser { user, error in
@@ -31,16 +30,7 @@ extension HomeView {
                 }
             }
         }
-        func logout() {
-            guard let currentUser = currentUser else {
-                return
-            }
-            if currentUser.logout() {
-                loggedOut = true
-            } else {
-                failLogOut = true
-            }
-            
-        }
+        
     }
 }
+

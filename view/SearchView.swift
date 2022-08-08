@@ -14,8 +14,6 @@ struct SearchView: View {
     @StateObject var viewModel = ViewModel()
     
     var body: some View {
-        
-        
         NavigationView {
             VStack {
                 SearchBar(placeholder: "Search", text: $viewModel.text)
