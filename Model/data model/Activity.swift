@@ -4,9 +4,9 @@
 //
 //  Created by Media Davarkhah on 2/18/1401 AP.
 //
-
 import Foundation
-struct Activity: Codable {
+
+class Activity: Codable {
     // MARK: properties
     internal var createdAt: String!
     internal var description: String
@@ -16,9 +16,10 @@ struct Activity: Codable {
     internal var uid: String! // room id
     internal var tagColor: String
     internal var active: Bool = true
-
+    internal var host: User?
+    
     // MARK: initializer
-    init(name: String, description: String, participantsLimit: Int, tagColor: String = "activityCard 1", createdAt: String, uid: String, active: Bool,hostId: String) {
+    init(name: String, description: String, participantsLimit: Int, tagColor: String = "activityCard 1", createdAt: String, uid: String, active: Bool,hostId: String, host: User? = nil) {
         self.name = name
         self.description = description
         self.participantsLimit = participantsLimit
@@ -27,6 +28,10 @@ struct Activity: Codable {
         self.uid = uid
         self.active = active
         self.hostId = hostId
+        if let host = host {
+            self.host = host
+        }
+        
     }
     
     
@@ -61,9 +66,24 @@ struct Activity: Codable {
     private func remove() {
 
     }
+    func fetchHost(completion: @escaping (User?, Error?) -> Void ) {
+        FireStoreManager.shared.fetchUser(with: hostId) { user, error in
+            guard let user = user, error == nil else {
+                completion(nil,error)
+                return
+            }
+            self.host = user
+            completion(user,nil)
+        }
+    }
 }
 
-extension Activity: Hashable {
+extension Activity: Identifiable {
+    var id: ObjectIdentifier {
+        return ObjectIdentifier(Activity.self)
+    }
+    
+    
    
     
     

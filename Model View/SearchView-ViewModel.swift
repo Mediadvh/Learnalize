@@ -7,9 +7,12 @@
 
 import Foundation
 import UIKit
-enum SearchMode {
-    case searchActivity
+enum SearchMode: Identifiable {
+    var id: Self { self }
+    
     case searchUser
+    case searchActivity
+
 }
 extension SearchView {
     @MainActor class ViewModel: ObservableObject {
@@ -22,6 +25,9 @@ extension SearchView {
        // @Published var moveToProfile = false
       
         func searchActivity(name: String) {
+            guard name != "" else {
+                self.isLoading = false
+                return }
             FireStoreManager.shared.searchActivity(by: name) { activities, error in
                 self.isLoading = true
                 guard error == nil, let activities = activities else {
@@ -32,14 +38,18 @@ extension SearchView {
                 if activities.isEmpty {
                     self.foundResult = false
                     self.isLoading = false
+                } else {
+                    self.foundResult = true
+                    self.resultActivities = activities
+                    self.isLoading = false
                 }
-                self.foundResult = true
-                self.resultActivities = activities
-    
             }
         }
         
         func searchUser(username: String) {
+            guard username != "" else {
+                self.isLoading = false
+                return }
             self.isLoading = true
             FireStoreManager.shared.searchUser(by: text) { users, error in
                 guard error == nil, let users = users else {

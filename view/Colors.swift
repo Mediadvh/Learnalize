@@ -10,14 +10,14 @@ struct Colors {
     
     static let background = Color("background")
     static let accent = Color("accent")
-    static let activityCard1 = UIColor(named: "activityCard 1")!
-    static let activityCard2 = UIColor(named: "activityCard 2")!
-    static let activityCard3 = UIColor(named: "activityCard 3")!
-    static let activityCard4 = UIColor(named: "activityCard 4")!
-    static let activityCard1Accent = UIColor(named: "activityCard 1 accent")!
-    static let activityCard2Accent = UIColor(named: "activityCard 2 accent")!
-    static let activityCard3Accent = UIColor(named: "activityCard 3 accent")!
-    static let activityCard4Accent = UIColor(named: "activityCard 4 accent")!
+    static let activityCard1 = Color("activityCard 1")
+    static let activityCard2 = Color("activityCard 2")
+    static let activityCard3 = Color("activityCard 3")
+    static let activityCard4 = Color("activityCard 4")
+    static let activityCard1Accent = Color("activityCard 1 accent")
+    static let activityCard2Accent = Color("activityCard 2 accent")
+    static let activityCard3Accent = Color("activityCard 3 accent")
+    static let activityCard4Accent = Color("activityCard 4 accent")
     static let login = Color("login")
     static let register = Color("register")
     static let green = Color.green

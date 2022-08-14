@@ -11,6 +11,7 @@ import SDWebImageSwiftUI
 struct ChatListView: View {
    @StateObject var viewModel = ViewModel()
     var body: some View {
+        NavigationView {
         VStack {
             
             HStack(spacing: 16) {
@@ -28,23 +29,26 @@ struct ChatListView: View {
             .padding()
             Rectangle()
                 .frame(height: 2, alignment: .center)
-
-//            if viewModel.showDefaultList {
-//                defaultList
-//                    .overlay(newMessageButton, alignment: .bottom)
-//            } else {
-//                messageList
-//                    .overlay(newMessageButton, alignment: .bottom)
-//            }
+            messageList
+            //            if viewModel.showDefaultList {
+            //                defaultList
+            //                    .overlay(newMessageButton, alignment: .bottom)
+            //            } else {
+            //                messageList
+            //                    .overlay(newMessageButton, alignment: .bottom)
+            //            }
             Spacer()
-        
+            
         }.navigationBarHidden(true)
-//        .fullScreenCover(isPresented: $viewModel.showNewMessageList) {
-//
-//            UserResultView(users: viewModel.NewMessageList, destination: .chatLogView)
-//
-//
-//        }
+        //        .fullScreenCover(isPresented: $viewModel.showNewMessageList) {
+        //
+        //            UserResultView(users: viewModel.NewMessageList, destination: .chatLogView)
+        //
+        //
+        //        }
+        
+        
+        }
        
     }
    
@@ -57,10 +61,12 @@ struct ChatListView: View {
                     .frame(width: 60, height: 60, alignment: .center)
                     .clipShape(Circle())
                     .foregroundColor(.black)
-                    .overlay {
-                        Circle()
-                            .stroke(.black, lineWidth: 2)
-                    }
+//                    .overlay {
+//                        Circle()
+//                            .stroke(.black, lineWidth: 2)
+//                    }
+                    .shadow(color: Color.black.opacity(0.1), radius: 3, x: 5, y: 5)
+                    .shadow(color: Color.black.opacity(0.1), radius: 3, x: -5, y: -5)
                     .padding(8)
             } else  {
                 Image("profile")
@@ -69,10 +75,12 @@ struct ChatListView: View {
                     .frame(width: 60, height: 60, alignment: .center)
                     .clipShape(Circle())
                     .foregroundColor(.black)
-                    .overlay {
-                        Circle()
-                            .stroke(.black, lineWidth: 2)
-                    }
+//                    .overlay {
+//                        Circle()
+//                            .stroke(.black, lineWidth: 2)
+//                    }
+                    .shadow(color: Color.black.opacity(0.1), radius: 3, x: 5, y: 5)
+                    .shadow(color: Color.black.opacity(0.1), radius: 3, x: -5, y: -5)
                     .padding(8)
             }
         }
@@ -117,34 +125,9 @@ struct ChatListView: View {
     var messageList: some View {
         ScrollView {
             ForEach(viewModel.recentChat) { chat in
-                VStack {
-
-                    HStack(spacing: 16) {
-                    
-                        profileImage(pic: chat.other.picture ?? " person.circle")
-                            .font(.system(size: 32))
-
-                        VStack(alignment: .leading) {
-                            Text(chat.other.username ?? "Loading...")
-                                .font(.system(size:16, weight:.bold))
-                            Text(chat.recentMessage.text)
-                                .font(.system(size: 16))
-                                .foregroundColor(Color(.lightGray))
-
-                        }
-                        Spacer()
-                        Text("22d")
-                            .font(.system(size: 14, weight: .semibold))
-                        
-
-                      
-                    }
-                    Divider()
-                        .padding(.vertical, 8)
-
-                }.padding(.horizontal)
-
-
+                NavigationLink(destination: ChatLogView(receiver: chat.other)) {
+                    recentChat(chat: chat)
+                }
             }.padding(.bottom, 50)
 
         }
@@ -154,6 +137,44 @@ struct ChatListView: View {
             EmptyView()
         }
     }
+    func recentChat(chat: Chat) -> some View {
+        VStack {
+            HStack(spacing: 16) {
+            
+                profileImage(pic: chat.other.picture ?? " person.circle")
+                    .font(.system(size: 32))
+
+                VStack(alignment: .leading) {
+                    Text(chat.other.username ?? "Loading...")
+                        .font(.system(size:16, weight:.bold))
+                    if chat.recentMessage.senderId == Authentication.shared.getCurrentUserUid()! {
+                        Text(chat.recentMessage.text)
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(.lightGray))
+                    } else {
+                        Text(chat.recentMessage.text)
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(.black))
+                    }
+                   
+
+                }
+                Spacer()
+              
+                Text(chat.timeAgo)
+                    .font(.system(size: 14, weight: .semibold))
+             
+                
+                
+
+              
+            }
+            Divider()
+                .padding(.vertical, 8)
+
+        }.padding(.horizontal)
+
+    }
 }
 
 struct ChatListView_Previews: PreviewProvider {
@@ -161,4 +182,5 @@ struct ChatListView_Previews: PreviewProvider {
         ChatListView()
     }
 }
+
 

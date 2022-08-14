@@ -62,6 +62,8 @@ struct UserResultView: View {
         }.background(.clear)
     }
     var userList: some View {
+        
+        
         List {
             ForEach(users) { item in
                 switch destination {
@@ -80,14 +82,16 @@ struct UserResultView: View {
                     userCard(user: item)
                         .frame(width: 300, height: 100, alignment: .leading)
                 }
+                
             }
             .onDelete(perform: delete)
         }.background(.clear)
         
+        
+       
        
     }
     func delete(at offsets: IndexSet) {
-       
         let index = offsets[offsets.startIndex]
         FireStoreManager.shared.deleteUser(with: users[index].id) 
         users.remove(atOffsets: offsets)

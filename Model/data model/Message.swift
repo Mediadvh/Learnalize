@@ -9,6 +9,7 @@ import Foundation
 import Firebase
 struct Message {
     // MARK: properties
+    
     var text: String
     var senderId: String
     var receiverId: String
@@ -62,24 +63,32 @@ struct Message {
             }
             print("successfully saved recipient user receiving message!")
             completion(true)
+            persistRecentMessage()
            
         }
+        
+        
     }
     func persistRecentMessage() {
         let db = FireStoreManager.shared.firestore
-        let messageData = ["timestamp": Timestamp(), "text": text, "senderId": senderId, "receiverId": receiverId] as [String: Any]
+        let senderMsgData = ["uid": receiverId ,"timestamp": Timestamp(), "text": text, "senderId": senderId, "receiverId": receiverId] as [String: Any]
         
         let senderDoc = db.collection("recent_messages").document(senderId).collection("messages").document(receiverId)
         
-        senderDoc.setData(messageData) { error in
-            guard error == nil else { return }
+        senderDoc.setData(senderMsgData) { error in
+            guard error == nil else {
+                print("DEBUG: could not persist message: \(error?.localizedDescription)" )
+                return }
             
         }
         
+        let recieverMsgData = ["uid": senderId ,"timestamp": Timestamp(), "text": text, "senderId": senderId, "receiverId": receiverId] as [String: Any]
         let receiverDoc = db.collection("recent_messages").document(receiverId).collection("messages").document(senderId)
         
-        receiverDoc.setData(messageData) { error in
-            guard error == nil else { return }
+        receiverDoc.setData(recieverMsgData) { error in
+            guard error == nil else {
+                print("DEBUG: could not persist message: \(error?.localizedDescription)" )
+                return }
             
         }
         

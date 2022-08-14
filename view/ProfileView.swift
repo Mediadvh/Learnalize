@@ -118,37 +118,40 @@ struct ProfileView: View {
         
     }
     
-   var optionsHeader: some View {
-       HStack {
-           activitiesButton
-           Spacer(minLength: 0)
-           followersButton
-           Spacer(minLength: 0)
-           followingsButton
-          
-       }
-       .padding(.horizontal,20)
-           .padding(.vertical)
-           .background(Colors.background)
-           .cornerRadius(8)
-           .shadow(color: Color.black.opacity(0.5), radius: 5, x: 8, y: 8)
-           .shadow(color: Color.black.opacity(0.1), radius: 5, x: -8, y: -8)
-           .padding(.horizontal)
-           .padding(.top,25)
-       
-   }
+    var optionsHeader: some View {
+        HStack {
+            activitiesButton
+            Spacer(minLength: 0)
+            followersButton
+            Spacer(minLength: 0)
+            followingsButton
+            
+        }
+        .padding(.horizontal,20)
+        .padding(.vertical)
+        .background(Colors.background)
+        .cornerRadius(8)
+        .shadow(color: Color.black.opacity(0.5), radius: 5, x: 8, y: 8)
+        .shadow(color: Color.black.opacity(0.1), radius: 5, x: -8, y: -8)
+        .padding(.horizontal)
+        .padding(.top,25)
+        
+    }
     var activitiesButton: some View {
         Button {
             self.index = 0
         } label: {
-                
-            Text("\(viewModel.activityCount) activities")
-                .font(.body)
-                .foregroundColor(self.index == 0 ? Color.white : .gray)
-                .padding(.vertical, 10)
-                .padding(.horizontal)
-                .background(self.index == 0 ? Color.blue: .clear)
-                .cornerRadius(10)
+            
+            VStack {
+                Text("\(viewModel.activityCount)")
+                Text("activities")
+            }
+            .font(.body)
+            .foregroundColor(self.index == 0 ? Color.white : .gray)
+            .padding(.vertical, 10)
+            .padding(.horizontal)
+            .background(self.index == 0 ? Color.blue: .clear)
+            .cornerRadius(10)
         }
         
     }
@@ -157,14 +160,16 @@ struct ProfileView: View {
             viewModel.showsFollowers = true
             self.index = 1
         } label: {
-     
-                Text("\(viewModel.followerCount) followers")
-                .font(.body)
-                .foregroundColor(self.index == 1 ? Color.white : .gray)
-                .padding(.vertical, 10)
-                .padding(.horizontal)
-                .background(self.index == 1 ? Color.blue: .clear)
-                .cornerRadius(10)
+            VStack {
+                Text("\(viewModel.followerCount)")
+                Text("followers")
+            }
+            .font(.body)
+            .foregroundColor(self.index == 1 ? Color.white : .gray)
+            .padding(.vertical, 10)
+            .padding(.horizontal)
+            .background(self.index == 1 ? Color.blue: .clear)
+            .cornerRadius(10)
         }
         
     }
@@ -173,15 +178,17 @@ struct ProfileView: View {
             viewModel.showsFollowings = true
             self.index = 2
         } label: {
-          
-                Text("\(viewModel.followingCount) followings")
-
-                .font(.body)
-                .foregroundColor(self.index == 2 ? Color.white : .gray)
-                .padding(.vertical, 10)
-                .padding(.horizontal)
-                .background(self.index == 2 ? Color.blue: .clear)
-                .cornerRadius(10)
+            VStack {
+                Text("\(viewModel.followingCount)")
+                Text("followings")
+            }
+            
+            .font(.body)
+            .foregroundColor(self.index == 2 ? Color.white : .gray)
+            .padding(.vertical, 10)
+            .padding(.horizontal)
+            .background(self.index == 2 ? Color.blue: .clear)
+            .cornerRadius(10)
         }
         
     }

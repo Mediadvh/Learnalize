@@ -72,7 +72,7 @@ struct ActivityView: View {
             }
                 
             
-        }.background(Color(colortagAccent))
+        }.background(Color(colortagAccent as! CGColor))
             .ignoresSafeArea()
             .frame(height: 150, alignment: .bottom)
             
@@ -81,7 +81,7 @@ struct ActivityView: View {
     var whiteboard: some View {
         ZStack {
             Color.white
-                .border(Color(colortag), width: 10)
+                .border(colortag, width: 10)
             Text("White board")
                 .font(.largeTitle)
         }

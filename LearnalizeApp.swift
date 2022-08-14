@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Firebase
+
 @main
 struct LearnalizeApp: App {
     init() {

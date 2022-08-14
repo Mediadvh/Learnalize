@@ -37,6 +37,8 @@ extension ChatListView {
                 self.recentChat = recentChat
                 self.showDefaultList = false
                 print(recentChat)
+                
+                
             }
         }
        

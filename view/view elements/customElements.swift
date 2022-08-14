@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-func usernameButton(imageName: String) -> some View {
+func usernameButton(imageName: String, username: String) -> some View {
     Button {
         print("move to profile view")
     } label: {
         HStack {
             Image(systemName: imageName)
             .font(.largeTitle)
-            Text("_username")
+            Text(username)
                 .font(.body)
         }
     }

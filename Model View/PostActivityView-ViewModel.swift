@@ -42,18 +42,24 @@ extension PostActivityView {
             isLoading = true
             if let userId = Authentication.shared.getCurrentUserUid() {
               // create room
-                RoomAPIHandler.roomForHost(name: name, description: description, userId:  Authentication.shared.getCurrentUserUid()!) { room, token, error in
-                    guard let room = room, let token = token, error == nil else {
+                FireStoreManager.shared.fetchUser(with: userId) { user, error in
+                    guard let error = error, let user = user else {
                         return
                     }
-                    DispatchQueue.main.async {
-                        self.token = token.token
-                        self.activity = Activity(name: self.name, description: self.description, participantsLimit: self.participantsLimit, tagColor: self.pickedColor, createdAt: room.created_at, uid: room.id, active: room.active, hostId: userId)
-                        self.create(self.activity!)
+                    RoomAPIHandler.roomForHost(name: self.name, description: self.description, userId:  userId) { room, token, error in
+                        guard let room = room, let token = token, error == nil else {
+                            return
+                        }
+                        DispatchQueue.main.async {
+                            self.token = token.token
+                            self.activity = Activity(name: self.name, description: self.description, participantsLimit: self.participantsLimit, tagColor: self.pickedColor, createdAt: room.created_at, uid: room.id, active: room.active, hostId: userId, host: user)
+                            self.create(self.activity!)
+                        }
+                        
+                       
                     }
-                    
-                   
                 }
+               
 
             }
         }

@@ -44,7 +44,6 @@ extension ChatLogView {
             message.send { success in
                 if success {
                     print("sent the message successfully!")
-                    message.persistRecentMessage()
                     self.count += 1
                 }
             }

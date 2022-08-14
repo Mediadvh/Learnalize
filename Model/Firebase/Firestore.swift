@@ -198,7 +198,7 @@ class FireStoreManager {
         }
     }
     func searchActivity(by name: String, completionHandler: @escaping ([Activity]?, Error?) -> Void) {
-        let docRefs = firestore.collection("activities").whereField("name", in: [name]).limit(to: 10)
+        let docRefs = firestore.collection("activities").whereField("name", isGreaterThanOrEqualTo: name).whereField("name", isLessThan: name + "z").limit(to: 10)
         docRefs.getDocuments { querySnapshot, error in
             guard error == nil else {
                 completionHandler(nil,error)
@@ -225,7 +225,8 @@ class FireStoreManager {
     }
     
     func searchUser(by username: String, completionHandler: @escaping ([User]?, Error?) -> Void) {
-        let docRefs = firestore.collection("users").whereField("username", in: [username]).limit(to: 5)
+        
+        let docRefs = firestore.collection("users").whereField("username", isGreaterThanOrEqualTo: username).whereField("username", isLessThan: username + "z").limit(to: 10)
 
         
         docRefs.getDocuments { querySnapshot, error in
@@ -284,9 +285,9 @@ class FireStoreManager {
                     messages.append(message)
                 }
             })
-
+            
             completion(messages, nil)
-           
+            
         }
         
     }
@@ -298,30 +299,46 @@ class FireStoreManager {
                 completion(nil, error)
                 return
             }
-
+            
             querySnapshot?.documentChanges.forEach({ change in
-                if change.type == .added {
-                    let data = change.document.data()
-                    let message = Message(data: data)
-                    print(message.receiverId)
-                    self.fetchUser(with: message.receiverId) { user, error in
-                        guard let user = user, error == nil else {
-                            return
-                        }
-                        let chat = Chat(other: user, recentMessage: message)
-                        recentChat.append(chat)
-                        completion(recentChat, nil)
-                      
-                    }
-                
-                   
+                let docId = change.document.documentID
+                print("docId \(docId)")
+//                                print("recentChat[0].uid \(recentChat[0].uid)")
+//                                print("recentChat[0].id \(recentChat[0].id)")
+                if let index = recentChat.firstIndex(where: { chat in
+                    print(chat.id)
+                    print(chat.uid)
+                    return chat.uid == docId
+                }) {
+                    recentChat.remove(at: index)
                 }
-               
+                
+                
+                let data = change.document.data()
+                let message = Message(data: data)
+                var recentId = message.senderId
+                if message.senderId == userId {
+                    recentId = message.receiverId
+                }
+                
+                self.fetchUser(with: recentId) { user, error in
+                    guard let user = user, error == nil else {
+                        return
+                    }
+                   
+                    var chat = Chat(uid: user.id, other: user, recentMessage: message)
+                    
+                    recentChat.append(chat)
+                    completion(recentChat, nil)
+                    
+                }
+                
             })
-           
-
+            
+            
         }
     }
     
    
+    
 }
