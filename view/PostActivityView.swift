@@ -22,8 +22,8 @@ struct PostActivityView: View {
             
         }
         .fullScreenCover(isPresented: $viewModel.success) {
-            if let activity = viewModel.activity, let token = viewModel.token {
-                Room(activity: activity, userId: activity.hostId, token: token)
+            if let activity = viewModel.activity, let token = viewModel.token , let hostId = Authentication.shared.getCurrentUserUid() {
+                Room(activity: activity, token: token)
             }
         }
         

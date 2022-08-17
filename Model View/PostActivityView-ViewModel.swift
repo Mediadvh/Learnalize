@@ -23,7 +23,7 @@ extension PostActivityView {
         @Published var token: String?
         
         fileprivate func create(_ activity: Activity) {
-            activity.save() { success, error in
+            activity.create() { success, error in
                 if success {
                     self.success = true
                     self.name = ""
@@ -43,7 +43,7 @@ extension PostActivityView {
             if let userId = Authentication.shared.getCurrentUserUid() {
               // create room
                 FireStoreManager.shared.fetchUser(with: userId) { user, error in
-                    guard let error = error, let user = user else {
+                    guard error == nil, let user = user else {
                         return
                     }
                     RoomAPIHandler.roomForHost(name: self.name, description: self.description, userId:  userId) { room, token, error in

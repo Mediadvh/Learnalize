@@ -339,6 +339,31 @@ class FireStoreManager {
         }
     }
     
+    func checkForPermissions(activityId: String, completion: @escaping ([String]?, Error?) -> Void) {
+        var users = [String]()
+        firestore.collection("activities").document(activityId).collection("participants").addSnapshotListener { querySnapshot, error in
+            guard error == nil else {
+                print("couldn't check for permissions")
+                completion(nil,error)
+                return
+            }
+
+            querySnapshot?.documentChanges.forEach({ change in
+                if change.type == .modified {
+                    let data = change.document.data()
+                    let askedForPermission = data["askedForPermission"] as? Bool ?? false
+                    if askedForPermission {
+                        let peerId = data["peerId"] as? String ?? ""
+                        users.append(peerId)
+                        print("\(peerId) asked for permission")
+                        completion(users,nil)
+                    }
+                }
+            })
+          
+        }
+    }
+    
    
     
 }

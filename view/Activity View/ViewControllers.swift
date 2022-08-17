@@ -11,10 +11,14 @@ import UIKit
 import SwiftUI
 import ReplayKit
 //import ReplayKit.broadcast
-
+enum Role: String {case guest, host, privilegedGuest}
 class RoomController: UIViewController, UIGestureRecognizerDelegate {
     // MARK: -Properties
-   
+    let muteAudioImage = UIImage(systemName: "mic.slash.fill")
+    let unmuteAudioImage = UIImage(systemName: "mic.fill")
+    
+    let muteVideoImage = UIImage(systemName: "video.slash.fill")
+    let unmuteVideoImage = UIImage(systemName: "video.fill")
     
     var defaultHeightConstraint: NSLayoutConstraint!
     var defaultWidthConstraint: NSLayoutConstraint!
@@ -23,23 +27,44 @@ class RoomController: UIViewController, UIGestureRecognizerDelegate {
     
     var config: HMSConfig!
     var collectionView: UICollectionView!
-    var activity: Activity
-    var userId: String
-    var token: String
     var hmsSDK = HMSSDK.build()
     var trackViewMap = [HMSTrack: HMSVideoView]()
+    var localPeer: HMSLocalPeer?
+    var raisedHandUsers = [String]()
+    
+    var activity: Activity
+    var token: String
     var message: String?
+    var participant: Participant?
+
     
     // MARK: - initializers
-    init(activity: Activity, userId: String, token: String) {
+    init(activity: Activity, token: String,participant: Participant? = nil) {
         self.activity = activity
-        self.userId = userId
         self.token = token
+        
+        
         super.init(nibName: nil, bundle: nil)
+        
         config = HMSConfig(authToken: token)
+       
+        if let participant = participant {
+            self.participant = participant
+//            participant.peerId = config.userID
+            print("config.userID\(config.userID)")
+//            participant.storePeerId(activityId: activity.uid, id: config.userID) 
+            // add participant to the activity
+           
+                participant.joinActivity(activityId: activity.uid)
+                activity.increaseParticipantsNumber()
+               
+                
+            
+        }
         hmsSDK = HMSSDK.build { sdk in
             sdk.appGroup = "group.mediadh.App.Learnalize"
         }
+        
         
     }
     
@@ -53,10 +78,12 @@ class RoomController: UIViewController, UIGestureRecognizerDelegate {
     //MARK: -UIElements
     lazy var broadcasterPickerContainer: UIView = {
         let v = UIView()
+        v.frame = CGRect(x: 0, y:0, width: 44, height: 44)
         return v
     }()
     lazy var LocalVideoView: HMSVideoView = {
         let video = HMSVideoView()
+        video.backgroundColor = .black
         return video
     }()
     
@@ -67,7 +94,6 @@ class RoomController: UIViewController, UIGestureRecognizerDelegate {
         label.font = UIFont.boldSystemFont(ofSize: 50)
         label.textAlignment = .center
         label.numberOfLines = 0
-        
         return label
     }()
     lazy var leaveButton: UIButton = {
@@ -78,27 +104,33 @@ class RoomController: UIViewController, UIGestureRecognizerDelegate {
         button.layer.cornerRadius = 4
         return button
     }()
-    @objc func leaveButtonTapped() {
-        hmsSDK.leave()
-        self.dismiss(animated: true)
-    }
-    @objc func sendMessageTapped() {
-        if let  message = message {
-            hmsSDK.sendBroadcastMessage(type: "chat", message: message) { msg, error in
-                guard let msg = msg, error == nil else { return }
-                print("message form \(msg.sender?.name ?? "N/A") was sent successfully!")
-                
-            }
-        }
-    }
- 
-    let muteAudioImage = UIImage(systemName: "mic.slash.fill")
-    let unmuteAudioImage = UIImage(systemName: "mic.fill")
     
-    let muteVideoImage = UIImage(systemName: "video.slash.fill")
-    let unmuteVideoImage = UIImage(systemName: "video.fill")
+    lazy var endButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("end", for: .normal)
+        button.backgroundColor = .red
+        button.addTarget(self, action: #selector(endButtonTapped), for: .touchUpInside)
+        button.layer.cornerRadius = 4
+        return button
+    }()
+    lazy var noAccessLabel: UILabel = {
+        let label = UILabel()
+        label.text = "No Access!"
+        label.numberOfLines = 0
+        return label
+    }()
     
-    
+    lazy var requestPermissionButton: UIButton = {
+        let button = UIButton()
+        let config = UIImage.SymbolConfiguration(
+            pointSize: 50, weight: .medium, scale: .default)
+        let image = UIImage(systemName: "hand.raised", withConfiguration: config)
+        button.setImage(image, for: .normal)
+        button.addTarget(self, action: #selector(requestPermissionTapped), for: .touchUpInside)
+        button.tintColor = .systemYellow
+        button.imageView?.frame = CGRect(x: 0, y: 0, width: 100, height: 100)
+        return button
+    }()
     
     lazy var audioButton: UIButton = {
         let button = UIButton()
@@ -107,7 +139,7 @@ class RoomController: UIViewController, UIGestureRecognizerDelegate {
         button.addTarget(self, action: #selector(muteAudioTapped), for: .touchUpInside)
         return button
     }()
-
+    
     lazy var videoButton: UIButton = {
         let button = UIButton()
         button.frame = CGRect(x: 100, y: 100, width: 100, height: 50)
@@ -125,20 +157,26 @@ class RoomController: UIViewController, UIGestureRecognizerDelegate {
         myView.backgroundColor = UIColor(named: activity.tagColor)
         return myView
     }()
-//
-//    lazy var shareScreenButton: UIButton = {
-//        var button = UIButton()
-//        button.setTitle("Share My Screen", for: .normal)
-//        button.addTarget(self, action: #selector(prepareSystemBroadcaster), for: .touchUpOutside)
-//        button.backgroundColor = .red
-//        button.layer.cornerRadius = 10
-//        return button
-//    }()
-//    lazy var broadcastPicker: RPSystemBroadcastPickerView = {
-//        let picker = RPSystemBroadcastPickerView()
-//        picker.preferredExtension = "com.mediadh.App.Learnalize"
-//        return picker
-//    }()
+    
+    lazy var broadcastPicker: RPSystemBroadcastPickerView = {
+        print("tapped screen share")
+        let frame = CGRect(x: 0, y:0, width: 500 , height: 500)
+        let systemBroadcastPicker = RPSystemBroadcastPickerView(frame: frame)
+        systemBroadcastPicker.autoresizingMask = [.flexibleTopMargin, .flexibleRightMargin]
+        systemBroadcastPicker.preferredExtension = "com.mediadh.App.Learnalize.broadcast"
+        systemBroadcastPicker.showsMicrophoneButton = false
+        
+        for view in systemBroadcastPicker.subviews {
+            if let button = view as? UIButton {
+                
+                let configuration = UIImage.SymbolConfiguration(pointSize: 24)
+                let image = UIImage(systemName: "rectangle.on.rectangle", withConfiguration: configuration)?.withTintColor(.systemBlue, renderingMode: .alwaysOriginal)
+                button.setImage(image, for: .normal)
+            }
+        }
+        
+        return systemBroadcastPicker
+    }()
     
     lazy var content: UIView = {
         let view = UIView()
@@ -146,12 +184,34 @@ class RoomController: UIViewController, UIGestureRecognizerDelegate {
         return view
     }()
     
-//    @objc func shareScreenTapped() {
-//        view.addSubview(broadcastPicker)
-//        broadcastPicker.translatesAutoresizingMaskIntoConstraints = false
-//        broadcastPicker.customXYConstraint(x: view.centerXAnchor, y: view.centerYAnchor)
-//    }
-  
+    // MARK: -Button targets
+    @objc func leaveButtonTapped() {
+        hmsSDK.leave()
+        // remove participant from activity
+        if let participant = participant {
+            participant.leaveActivity(activityId: activity.uid)
+            activity.decreaseParticipantsNumber()
+        }
+        
+        self.dismiss(animated: true)
+    }
+    @objc func endButtonTapped() {
+        if localPeer?.role?.permissions.endRoom == true {
+            hmsSDK.endRoom(reason: "it's enough for today!")
+            self.dismiss(animated: true)
+        } else {
+            print("you are not alowed to end this room")
+        }
+    }
+    @objc func sendMessageTapped() {
+        if let  message = message {
+            hmsSDK.sendBroadcastMessage(type: "chat", message: message) { msg, error in
+                guard let msg = msg, error == nil else { return }
+                print("message form \(msg.sender?.name ?? "N/A") was sent successfully!")
+                
+            }
+        }
+    }
     
 //     should be called from main queue
     @objc func muteAudioTapped() {
@@ -175,13 +235,36 @@ class RoomController: UIViewController, UIGestureRecognizerDelegate {
       
     }
     
+    @objc func requestPermissionTapped() {
+        
+        if let participant = participant {
+            
+            let config = UIImage.SymbolConfiguration(
+                pointSize: 50, weight: .medium, scale: .default)
+            let image = UIImage(systemName: "hand.raised.fill", withConfiguration: config)
+            requestPermissionButton.setImage(image, for: .normal)
+            
+            participant.requestPermission(activityId: activity.uid)
+            
+            let alert = UIAlertController(title: "asked for permission", message: "Your request was sent to the host, please be patient!", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "Ok", style: .cancel) { alert in
+                self.noAccessLabel.text = "wait!"
+            }
+            alert.addAction(okAction)
+            self.present(alert, animated: true)
+            
+        }
+        
+    }
+    
     
     // MARK: - Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         collectionViewInit()
-        prepareSystemBroadcaster()
+        
         preview(config: config)
         
       
@@ -194,7 +277,22 @@ class RoomController: UIViewController, UIGestureRecognizerDelegate {
         LocalVideoView.addGestureRecognizer(tapGesture)
         LocalVideoView.isUserInteractionEnabled = true
         
-      
+        if participant == nil {
+            FireStoreManager.shared.checkForPermissions(activityId: activity.uid) { users, error in
+                guard let users = users, error == nil else {
+                    return
+                }
+                DispatchQueue.main.async {
+                    self.raisedHandUsers = users
+                    print("raised hand users: \(self.raisedHandUsers)")
+                    
+                    self.collectionView.reloadData()
+                }
+                
+            }
+        }
+        
+
         
     }
     
@@ -213,23 +311,112 @@ class RoomController: UIViewController, UIGestureRecognizerDelegate {
     
    
 
+  
     
     override func viewDidLayoutSubviews() {
+        setupGeneralUI()
+
+        
+        // UI based on role
+        guard let participant = participant else {
+            setupHostUI()
+            return
+        }
+
+        switch participant.role  {
+            
+        case .host:
+            setupHostUI()
+            break
+        case .guest:
+            setupGuestUI()
+            break
+        case .privilegedGuest:
+            setupPrivilegedGuestUI()
+            break
+        
+            
+        }
+        
+        
+    }
+    
+    //MARK: -Helpers
+    fileprivate func setupHostUI() {
+        // show end activity button
+        view.addSubview(endButton)
+        endButton.translatesAutoresizingMaskIntoConstraints = false
+        endButton.customTBLTConstraint(top: view.safeAreaLayoutGuide.topAnchor, trailing: view.trailingAnchor,topConst: 3, trailingConst: 3)
+        endButton.customHeightWidthConstraint(height: 30, width: 100)
+        
+        // show make privileged button
+        
+        // show the text informing the host that the user wants to become privileged
+        
+        // everything is enabled
+        
+        
+        content.addSubview(broadcastPicker)
+        broadcastPicker.translatesAutoresizingMaskIntoConstraints = false
+        broadcastPicker.customXYConstraint(x: content.centerXAnchor, y: content.centerYAnchor)
+        
+        
+    }
+    fileprivate func setupGuestUI() {
+        // show leave activity button
+        view.addSubview(leaveButton)
+        leaveButton.customTBLTConstraint(top: view.safeAreaLayoutGuide.topAnchor, trailing: view.trailingAnchor,topConst: 3, trailingConst: 3)
+        leaveButton.customHeightWidthConstraint(height: 30, width: 100)
+        
+        // interaction with video and audio button is disallowed
+        audioButton.isUserInteractionEnabled = false
+        videoButton.isUserInteractionEnabled = false
+        // show request permission button
+        view.addSubview(requestPermissionButton)
+        requestPermissionButton.translatesAutoresizingMaskIntoConstraints = false
+        requestPermissionButton.customTBLTConstraint(top: leaveButton.bottomAnchor, trailing: view.trailingAnchor, topConst: 3, trailingConst: 3)
+       
+        LocalVideoView.addSubview(noAccessLabel)
+        noAccessLabel.translatesAutoresizingMaskIntoConstraints = false
+        noAccessLabel.customXYConstraint(x: LocalVideoView.centerXAnchor, y: LocalVideoView.centerYAnchor)
+        
+        
+        
+    }
+    fileprivate func setupPrivilegedGuestUI() {
+        // show leave activity button
+        // leave
+        view.addSubview(leaveButton)
+        leaveButton.customTBLTConstraint(top: view.safeAreaLayoutGuide.topAnchor, trailing: view.trailingAnchor,topConst: 3, trailingConst: 3)
+        leaveButton.customHeightWidthConstraint(height: 30, width: 100)
+        
+        // hide request permission button
+        requestPermissionButton.isHidden = true
+        // interaction with video and audio button is allowed
+        audioButton.isUserInteractionEnabled = true
+        videoButton.isUserInteractionEnabled = true
+        // screen share
+        content.addSubview(broadcastPicker)
+        broadcastPicker.translatesAutoresizingMaskIntoConstraints = false
+        broadcastPicker.customXYConstraint(x: content.centerXAnchor, y: content.centerYAnchor)
+        
+    }
+    
+    fileprivate func setupGeneralUI() {
+        // general
         view.addSubview(backgroundView)
         backgroundView.translatesAutoresizingMaskIntoConstraints = false
         backgroundView.customTBLTConstraint(top: view.topAnchor, bottom: view.bottomAnchor, leading: view.leadingAnchor, trailing: view.trailingAnchor)
         // UILabel
         view.addSubview(titleLabel)
         titleLabel.customTBLTConstraint(top: view.safeAreaLayoutGuide.topAnchor , leading: view.leadingAnchor, trailing: view.trailingAnchor, topConst: 20)
-        view.addSubview(leaveButton)
-        leaveButton.customTBLTConstraint(top: view.safeAreaLayoutGuide.topAnchor, trailing: view.trailingAnchor,topConst: 3, trailingConst: 3)
-        leaveButton.customHeightWidthConstraint(height: 30, width: 100)
         
-//        UICollectionView
+        
+        //        UICollectionView
         view.addSubview(collectionView)
         collectionView.customTBLTConstraint(bottom: view.bottomAnchor, leading: view.leadingAnchor, trailing: view.trailingAnchor, bottomConst: 0, leadingConst: 0, trailingConst: 0)
         collectionView.customHeightWidthConstraint(height: 200)
-//        view.addSubview(stackView)
+        //        view.addSubview(stackView)
         
         // local video
         view.addSubview(LocalVideoView)
@@ -237,19 +424,18 @@ class RoomController: UIViewController, UIGestureRecognizerDelegate {
         LocalVideoView.customTBLTConstraint(top: view.topAnchor, leading:  view.leadingAnchor, topConst: 10, leadingConst: 10)
         LocalVideoView.layer.cornerRadius = 10
         // default constraint
-       defaultHeightConstraint =  LocalVideoView.heightAnchor.constraint(equalToConstant: 100)
+        defaultHeightConstraint =  LocalVideoView.heightAnchor.constraint(equalToConstant: 100)
         defaultWidthConstraint =
         LocalVideoView.widthAnchor.constraint(equalToConstant: 100)
-        
         defaultHeightConstraint.isActive = true
         defaultWidthConstraint.isActive = true
         
         // zoomed constraint
-       
         
-//        zoomedHeightConstraint.isActive = true
-//        zoomedWidthConstraint.isActive = true
-
+        
+        //        zoomedHeightConstraint.isActive = true
+        //        zoomedWidthConstraint.isActive = true
+        
         
         
         view.addSubview(audioButton)
@@ -269,18 +455,24 @@ class RoomController: UIViewController, UIGestureRecognizerDelegate {
         
         view.addSubview(content)
         content.customXYConstraint(x: view.centerXAnchor, y: view.centerYAnchor)
-        content.customHeightWidthConstraint(height: view.frame.height - 250, width: view.frame.width - 50)
+//        content.customHeightWidthConstraint(height: view.frame.height - 250, width: view.frame.width - 50)
+        content.customHeightWidthConstraint(height: 100, width: 100)
+        content.layer.cornerRadius = 10
+    }
+    
+    
+    fileprivate func checkForPermissionRequests() {
+        // check for change
         
-//        content.addSubview(shareScreenButton)
-//        shareScreenButton.translatesAutoresizingMaskIntoConstraints = false
-//        shareScreenButton.customXYConstraint(x: content.centerXAnchor, y: content.centerYAnchor)
+        // update the permissions on ui
+        
+        // premissionRequests = [String] peerId is here
+        
+        // we update the ui of each peerId
         
     }
     
-   
-    
-    
-    //MARK: -Helpers
+ 
     fileprivate func preview(config: HMSConfig) {
         self.hmsSDK.preview(config: config, delegate: self)
     }
@@ -299,30 +491,25 @@ class RoomController: UIViewController, UIGestureRecognizerDelegate {
         collectionView.frame = view.bounds
     }
     
-    // broadcast
-    func prepareSystemBroadcaster() {
-        print("tapped screen share")
-        let frame = CGRect(x: 0, y:0, width: 44, height: 44)
-        let systemBroadcastPicker = RPSystemBroadcastPickerView(frame: frame)
-        systemBroadcastPicker.autoresizingMask = [.flexibleTopMargin, .flexibleRightMargin]
-        systemBroadcastPicker.preferredExtension = "com.mediadh.App.Learnalize.broadcast"
-        systemBroadcastPicker.showsMicrophoneButton = false
-        
-        for view in systemBroadcastPicker.subviews {
-            if let button = view as? UIButton {
-                
-                let configuration = UIImage.SymbolConfiguration(pointSize: 24)
-                let image = UIImage(systemName: "rectangle.on.rectangle", withConfiguration: configuration)?.withTintColor(.systemBlue, renderingMode: .alwaysOriginal)
-                button.setImage(image, for: .normal)
-            }
+    fileprivate func checkRole(role: HMSRole) -> Role? {
+        if role.permissions.mute!,
+           role.permissions.removeOthers!,
+           role.permissions.changeRole!,
+           role.permissions.endRoom!,
+           role.permissions.unmute! {
+            return .host
+        } else if role.permissions.hlsStreaming! {
+            return .guest
+        } else if role.permissions.mute!{
+            return .privilegedGuest
         }
-        
-        broadcasterPickerContainer.addSubview(systemBroadcastPicker)
-        systemBroadcastPicker.translatesAutoresizingMaskIntoConstraints = false
-        systemBroadcastPicker.customXYConstraint(x: broadcasterPickerContainer.centerXAnchor, y: broadcasterPickerContainer.centerYAnchor)
+        return nil
     }
     
   
+    
+    
+    
     
 }
 
@@ -336,10 +523,20 @@ extension RoomController:UICollectionViewDelegateFlowLayout, UICollectionViewDat
       
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing:VideoCollectionCell.self), for: indexPath) as! VideoCollectionCell
         
-        let video = trackViewMap[indexPath.row]
-        let remotePeer = hmsSDK.remotePeers![indexPath.row]
-        cell.configure(hmsSDK: hmsSDK,videoView: video.value, remotePeer: remotePeer)
+        print("Accessing \(indexPath.row)rd peer")
+        var video: (key: HMSTrack, value: HMSVideoView)?
+        if !trackViewMap.isEmpty {
+             video = trackViewMap[indexPath.row]
+        }
         
+       
+        let remotePeer = hmsSDK.remotePeers![indexPath.row]
+        if raisedHandUsers.contains(remotePeer.peerID) {
+            cell.configure(hmsSDK: hmsSDK,videoView: video?.value, remotePeer: remotePeer, raised: true)
+         
+        } else {
+            cell.configure(hmsSDK: hmsSDK,videoView: video?.value, remotePeer: remotePeer, raised: false)
+        }
         return cell
     }
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -353,6 +550,10 @@ extension RoomController:UICollectionViewDelegateFlowLayout, UICollectionViewDat
 extension RoomController: HMSUpdateListener {
     func on(join room: HMSRoom) {
         print("a new participant has joined the room")
+        DispatchQueue.main.async {
+            print("remote peers: \(self.hmsSDK.remotePeers)")
+            self.collectionView.reloadData()
+        }
         
     }
     
@@ -366,6 +567,9 @@ extension RoomController: HMSUpdateListener {
             if let videoTrack = peer.videoTrack {
                 removeVideoView(for: videoTrack)
             }
+            
+        case .roleUpdated:
+            print("role changed")
         default:
             break
         }
@@ -416,6 +620,8 @@ extension RoomController: HMSUpdateListener {
             self.collectionView.reloadData()
         }
         
+       
+        
     }
     
     func removeVideoView(for track: HMSVideoTrack) {
@@ -431,9 +637,22 @@ extension RoomController: HMSPreviewListener  {
     
     func onPreview(room: HMSRoom, localTracks: [HMSTrack]) {
         print("preview is running...")
-        let localTrack = (hmsSDK.localPeer?.videoTrack)!
-        LocalVideoView.setVideoTrack(localTrack)
-
+        if  let localTrack = hmsSDK.localPeer?.videoTrack {
+            LocalVideoView.setVideoTrack(localTrack)
+            localPeer = hmsSDK.localPeer
+            print("remote peers: \(self.hmsSDK.remotePeers)")
+            if let participant = participant {
+                participant.storePeerId(activityId: activity.uid,id: localPeer?.peerID ?? "")
+            }
+            print("available roles: ")
+            for i in hmsSDK.roles {
+                print(i.name)
+            }
+        } else {
+            
+        }
+       
+        
         joinRoom(config: config)
     }
 
@@ -441,11 +660,17 @@ extension RoomController: HMSPreviewListener  {
 //MARK: -UIViewControllerRepresentable
 struct Room: UIViewControllerRepresentable {
     var activity: Activity
-    var userId: String
     var token: String
+    var participant: Participant?
+   
     
     func makeUIViewController(context: Context) -> RoomController {
-        return RoomController(activity: activity, userId: userId, token: token)
+        if let participant = participant {
+            return RoomController(activity: activity,token: token,participant: participant)
+        } else {
+            return RoomController(activity: activity,token: token)
+        }
+        
     }
     
     func updateUIViewController(_ uiViewController: RoomController, context: Context) {

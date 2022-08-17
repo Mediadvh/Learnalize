@@ -13,9 +13,8 @@ struct activityCard: View {
     var showsUsername: Bool
     var selectedItem: Activity
     @State var username: String?
-    @State var token: String? = ""
-    @State var join: Bool = false
-   
+    @ObservedObject var viewModel = ViewModel()
+    
     init(isAbleToJoin: Bool, showsUsername: Bool, selectedItem: Activity) {
         self.isAbleToJoin = isAbleToJoin
         self.showsUsername = showsUsername
@@ -38,9 +37,17 @@ struct activityCard: View {
                         .font(.title2)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding()
+                    Text("description: \(selectedItem.description)")
+                        .font(.system(size: 13))
+                        .multilineTextAlignment(.leading)
+                        .padding()
+                        .lineLimit(0)
+               
                     Spacer(minLength: 5)
                     HStack {
-                        Text("10 participants")
+                       
+                            
+                        Text("\(selectedItem.participantsNumber) participants")
                             .font(.body)
                             .padding()
                         Spacer()
@@ -63,35 +70,41 @@ struct activityCard: View {
             
         }
         
-        .fullScreenCover(isPresented: $join) {
-            if let token = token, let username = username {
-                Room(activity: selectedItem, userId: username, token: token)
+        .fullScreenCover(isPresented: $viewModel.join) {
+            if let token = viewModel.token, let participant = viewModel.participant  {
+                Room(activity: selectedItem, token: token, participant: participant)
             
             } else {
-                Text("nothing to show here except: \(token ?? "no token")")
+                Text("can't join")
             }
         }
+        .alert("the participant limit on this activity has been reached, try another one!", isPresented: $viewModel.showAlert) {
+                    Button("OK", role: .cancel) { }
+                }
+
 
         
     }
     
     func joinButton(activity: Activity) -> some View {
         Button {
-            RoomAPIHandler.roomForGuest(roomId: activity.uid, userId: username ?? "N/A") { res, error in
-                guard let res = res else {
-                    return
-                }
-                
-                DispatchQueue.main.async {
-                    self.token = res.token
-                    print(res.token)
-                    self.join = true
-                    print("\(self.selectedItem.name) selected")
-                    
-                   
-                }
-              
-            }
+            
+            viewModel.joinActivity(activity: activity)
+//            RoomAPIHandler.roomForGuest(roomId: activity.uid, userId: username ?? "N/A") { res, error in
+//                guard let res = res else {
+//                    return
+//                }
+//
+//                DispatchQueue.main.async {
+//                    self.token = res.token
+//                    print(res.token)
+//                    self.join = true
+//                    print("\(self.selectedItem.name) selected")
+//
+//
+//                }
+//
+//            }
            
         } label: {
             VStack {

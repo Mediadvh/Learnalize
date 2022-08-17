@@ -33,6 +33,8 @@ struct Converter {
         let uid = dict["uid"] as? String ?? ""
         let tagColor = dict["tagColor"] as? String ?? ""
         let active = dict["active"] as? Bool ?? true
+        let participantsNumber = dict["participantsNumber"] as? Int ?? 0
+
 
         return Activity(name: name, description: description, participantsLimit: participantsLimit, tagColor: tagColor, createdAt: createdAt, uid: uid, active: active, hostId: hostId)
         
@@ -48,7 +50,15 @@ struct Converter {
                  "participantsLimit": activity.participantsLimit,
                  "uid":activity.uid,
                  "tagColor": activity.tagColor,
-                 "active": activity.active]
+                 "active": activity.active,
+                 "participantsNumber": activity.participantsNumber]
 
+    }
+    
+    static func ParticipatToData(participant: Participant) -> [String: Any] {
+        return  ["role": participant.role.rawValue,
+                 "askedForPermission": participant.askedForPermission,
+                 "uid": participant.uid,
+                 "peerId": participant.peerId]
     }
 }

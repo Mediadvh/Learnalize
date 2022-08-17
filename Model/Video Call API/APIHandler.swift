@@ -75,7 +75,7 @@ class APIHandler {
 class RoomAPIHandler: APIHandler  {
 
     enum EndPoints {
-        static let base_token_server = "http://192.168.1.113:8080/"
+        static let base_token_server = "https://learnalize-token-server.herokuapp.com/"
         static let base_100ms_server = "https://prod-in2.100ms.live/api/v2/"
 
         case getManagementToken
@@ -139,6 +139,7 @@ class RoomAPIHandler: APIHandler  {
             getManagementToken { response , error in
                 guard let response = response, error == nil else {
                     completion(nil,error)
+                    print(error?.localizedDescription)
                     return
                 }
 
@@ -165,6 +166,7 @@ class RoomAPIHandler: APIHandler  {
         createRoom(name: name, description: description) { room, error in
             guard let room = room, error == nil else {
                 completion(nil,nil,error)
+                print(error?.localizedDescription)
                 return
             }
 
@@ -193,5 +195,6 @@ class RoomAPIHandler: APIHandler  {
     }
 
 
+   
 }
 

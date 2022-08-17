@@ -7,28 +7,58 @@
 
 import Foundation
 import UIKit
-//class participant: User {
-//    // MARK: properties
+class Participant  {
+    // MARK: properties
+    internal var role: Role
+    internal var askedForPermission: Bool
+    internal var uid: String
+  internal var peerId: String
+    
 //    private var cameraAccess: Bool
 //    private var whiteBoardAccess: Bool
 //    private var micAccess: Bool
 //    private var joinDate: Date
 //    // MARK: initializer
-//    init(fullName: String, picture: String?, email: String, password: String, username: String,cameraAccess: Bool = false, whiteBoardAccess: Bool = false, micAccess: Bool = false, joinDate: Date = Date.now) {
-//        self.cameraAccess = cameraAccess
-//        self.whiteBoardAccess = cameraAccess
-//        self.micAccess = cameraAccess
-//        self.joinDate = joinDate
-//        super.init(fullName: fullName, picture: picture, email: email, password: password, username: username)
-//    }
+    init(role: Role, askedForPermission: Bool, uid: String) {
+        self.role = role
+        self.askedForPermission = askedForPermission
+        self.uid = uid
+        self.peerId = ""
+        
+    }
+    
 //    // MARK: methods
-//    private func requestAccess() {
-//        
-//    }
-//    private func joinActivity() {
-//        
-//    }
-//    private func leaveActivity() {
-//        
-//    }
-//}
+    internal func requestPermission(activityId: String) {
+        // change asked for permission field to true
+        FireStoreManager.shared.firestore.collection("activities").document(activityId).collection("participants").document(self.uid).updateData(["askedForPermission": true]) { error in
+            guard error == nil else { return }
+        }
+
+    }
+    
+    internal func joinActivity(activityId: String) {
+      
+        let encodedParticipant = Converter.ParticipatToData(participant: self)
+        
+        FireStoreManager.shared.firestore.collection("activities").document(activityId).collection("participants").document(self.uid).setData(encodedParticipant) { error in
+            guard error == nil else {
+                return
+            }
+        }
+        
+        
+    }
+    internal func leaveActivity(activityId: String) {
+        FireStoreManager.shared.firestore.collection("activities").document(activityId).collection("participants").document(self.uid).delete()
+       
+    }
+    internal func storePeerId(activityId: String,id: String) {
+        FireStoreManager.shared.firestore.collection("activities").document(activityId).collection("participants").document(self.uid).updateData(["peerId": id]) { error in
+            print("peerId to store: \(id)")
+            guard error == nil else {
+                print("DEBUG: error occurred while trying to add peerId field: \(error?.localizedDescription)")
+                return
+            }
+        }
+    }
+}
