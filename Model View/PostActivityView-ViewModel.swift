@@ -21,6 +21,8 @@ extension PostActivityView {
         @Published var pickedColor = "activityCard 1"
         @Published var activity: Activity?
         @Published var token: String?
+        @Published var showEmptyAlert: Bool = false
+
         
         fileprivate func create(_ activity: Activity) {
             activity.create() { success, error in
@@ -39,15 +41,32 @@ extension PostActivityView {
         }
         
         func post() {
+            if name == "" || description == "" {
+                self.showEmptyAlert = true
+                return
+            }
+            
             isLoading = true
+//            name = name.trimmingCharacters(in: .whitespaces)
+            name = String(name.filter { !" \n\t\r".contains($0) })
+          
             if let userId = Authentication.shared.getCurrentUserUid() {
               // create room
                 FireStoreManager.shared.fetchUser(with: userId) { user, error in
                     guard error == nil, let user = user else {
+                        DispatchQueue.main.async {
+                            self.showFailAlert = true
+                            self.isLoading = false
+                        }
                         return
                     }
                     RoomAPIHandler.roomForHost(name: self.name, description: self.description, userId:  userId) { room, token, error in
                         guard let room = room, let token = token, error == nil else {
+                            DispatchQueue.main.async {
+                                self.showFailAlert = true
+                                self.isLoading = false
+                            }
+                           
                             return
                         }
                         DispatchQueue.main.async {

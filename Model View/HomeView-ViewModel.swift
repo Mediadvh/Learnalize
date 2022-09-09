@@ -18,16 +18,35 @@ extension HomeView {
             isLoading = true
             Authentication.shared.getCurrentUser { user, error in
                 self.currentUser = user
-                guard let user = user, error == nil else { return }
+                guard let user = user, error == nil else {
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                    }
+                    return
+                }
                 user.showFeed { activities, error in
                     guard let activities = activities, error == nil else {
+                        DispatchQueue.main.async {
+                            self.isLoading = false
+                        }
                         return
                     }
                     self.activities = activities
-                    for i in activities {
-                        print(i.name)
-                    }
+                    
                 }
+            }
+        }
+        
+        func refreshFeed() {
+            currentUser?.showFeed { activities, error in
+                guard let activities = activities, error == nil else {
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                    }
+                    return
+                }
+                self.activities = activities
+                
             }
         }
         

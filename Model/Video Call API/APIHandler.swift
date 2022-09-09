@@ -131,10 +131,10 @@ class RoomAPIHandler: APIHandler  {
         let url = EndPoints.createRoom.url
         var request = URLRequest(url: url)
         // initialize body
-        let body = RoomRequest(name: name, description: description)
+        let body = RoomRequest(name: name, description: description, template: "Learnalize_videoconf_a2afcc2a-b8b6-4f17-a72b-52750a247427")
 
         // set additional headers
-        if Constants.ManagementToken == nil {
+//        if Constants.ManagementToken == nil {
             // fetch management token if it's empty
             getManagementToken { response , error in
                 guard let response = response, error == nil else {
@@ -151,11 +151,11 @@ class RoomAPIHandler: APIHandler  {
                 postRequest(urlRequest: &request, requestBody: body, responseType: RoomResponse.self, completionHandler: completion)
 
             }
-        } else {
-            request.setValue("Bearer \(Constants.ManagementToken)", forHTTPHeaderField:"Authorization")
-            // send request
-            postRequest(urlRequest: &request, requestBody: body, responseType: RoomResponse.self, completionHandler: completion)
-        }
+//        } else {
+//            request.setValue("Bearer \(Constants.ManagementToken)", forHTTPHeaderField:"Authorization")
+//            // send request
+//            postRequest(urlRequest: &request, requestBody: body, responseType: RoomResponse.self, completionHandler: completion)
+//        }
 
 
 

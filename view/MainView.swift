@@ -6,20 +6,23 @@
 //
 
 import SwiftUI
-let activity = Activity(name: "Test", description: "test this out", participantsLimit: 4, createdAt: "2 august", uid: "wjsnfeuhwjiaodiwedhijkwjd", active: true, hostId: "dksjhcidojwak", host: User(fullName: "media", picture: "s", email: "Asasdas", password: "ASdda", username: "Adsd", id: "ad"))
+
+
+//let activity = Activity(name: "Test", description: "test this out", participantsLimit: 4, createdAt: "2 august", uid: "wjsnfeuhwjiaodiwedhijkwjd", active: true, hostId: "dksjhcidojwak", host: User(fullName: "media", picture: "s", email: "Asasdas", password: "ASdda", username: "Adsd", id: "ad"))
 struct MainView: View {
 //    let isAdmin = true
     var body: some View {
-//        if (isAdmin == true) {
-//            SearchView()
-//        }
+        if (Authentication.shared.isAdmin()) {
+            SearchView()
+        }
 //       else
-        if(Authentication.shared.isLoggedIn()) {
+        else if(Authentication.shared.isLoggedIn()) {
+//
+//        Room(activity: activity, token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhY2Nlc3Nfa2V5IjoiNjJkZDAzOTdjMTY2NDAwNjU2OTViZWY0Iiwicm9vbV9pZCI6IjYyZmUwYzQyYjFlNzgwZTc4YzNiYTA5YyIsInVzZXJfaWQiOiJkaWxhc3hsayIsInJvbGUiOiJndWVzdCIsImp0aSI6ImZhYjI1MjljLTBjNDQtNDVhOS1iYzQzLWNlN2FjNmYxY2YwNiIsInR5cGUiOiJhcHAiLCJ2ZXJzaW9uIjoyLCJleHAiOjE2NjEwNzk5Mjh9.eKl7SqyFUK2qIMmCj5-FB3ZijdMDI2dbfGRtKERflsI", participant: Participant(role: .guest, askedForPermission: false, uid: "duqasyghjeuaisudhjx"))
+      
         
-//        Room(activity: activity, token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhY2Nlc3Nfa2V5IjoiNjJkZDAzOTdjMTY2NDAwNjU2OTViZWY0Iiwicm9vbV9pZCI6IjYyZGQwNmQzYzE2NjQwMDY1Njk1YmYwNSIsInVzZXJfaWQiOiJwZnJuZnZpdyIsInJvbGUiOiJwcml2aWxlZ2VkLWd1ZXN0IiwianRpIjoiZmFlNGU4OTAtYmQ4OS00MTBjLTg1OWMtYWY5ZjY3MGE4ODQzIiwidHlwZSI6ImFwcCIsInZlcnNpb24iOjIsImV4cCI6MTY2MDc0ODI2MX0.IwZQvJ5TN9FrortZ_0RjNok0iChawNz0XfS7wRO-oRM", participant: Participant(role: .host, askedForPermission: false, uid: "duqasyghjeuaisudhjx"))
-        
-//  
-    
+
+
 
             TabView {
                 HomeView()
@@ -57,7 +60,8 @@ struct MainView: View {
             RegisterView()
         }
 
-//
+        
+
     }
 }
 

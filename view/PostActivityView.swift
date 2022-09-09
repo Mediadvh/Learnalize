@@ -24,8 +24,19 @@ struct PostActivityView: View {
         .fullScreenCover(isPresented: $viewModel.success) {
             if let activity = viewModel.activity, let token = viewModel.token , let hostId = Authentication.shared.getCurrentUserUid() {
                 Room(activity: activity, token: token)
+                    .edgesIgnoringSafeArea(.all)
             }
         }
+        .alert("could not post activity, please try again in a moment!", isPresented: $viewModel.showFailAlert, actions: {
+            Button("Ok", role: .cancel) {
+                viewModel.showFailAlert = false
+            }
+        })
+        .alert("please fill out all the fields!", isPresented: $viewModel.showEmptyAlert, actions: {
+            Button("Ok", role: .cancel) {
+                viewModel.showEmptyAlert = false
+            }
+        })
         
         
        
@@ -97,7 +108,7 @@ struct PostActivityView: View {
                 
                 textField(placeholder: "", input: activityInput, isEmpty: true)
                     .padding()
-                Text("Description:(optional)")
+                Text("Description:")
                     .font(.body)
                 
                 textField(placeholder: "", input: descriptionInput, isEmpty: true)

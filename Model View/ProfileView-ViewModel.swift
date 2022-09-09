@@ -11,9 +11,10 @@ import SDWebImage
 import SDWebImageSwiftUI
 
 enum followButtonState:String { case follow = "Follow", following = "Following", loading = "Loading..." }
+
 extension ProfileView {
     @MainActor class ViewModel: ObservableObject {
-        
+        @Published var showEditView: Bool = false
         @Published var showChat: Bool = false
         @Published var userIDToShow: String? = Authentication.shared.getCurrentUserUid()
         @Published var user: User?
@@ -28,15 +29,19 @@ extension ProfileView {
         @Published private(set) var followBackgroundColor = Colors.blue
       
         @Published private(set) var isFollowed = false
+        @Published private(set) var isRequested = false
         @Published private(set) var followerCount = 0
         @Published private(set) var followingCount = 0
         @Published private(set) var activityCount = 0
         @Published private(set) var followings = [User]()
         @Published private(set) var followers = [User]()
+        @Published private(set) var hasRequestedToFollowCur = false
+       
         @Published var showsFollowers = false
         @Published var showsFollowings = false
         @Published var loggedOut = false
         @Published var failLogOut = false
+        @Published private var currentUser: User?
         
         func setup() {
             fetchUser { user, error in
@@ -46,6 +51,19 @@ extension ProfileView {
                 self.getFollowers()
                 self.getFollowings()
                 self.checkIsFollowed()
+                
+               
+            }
+            
+            
+        }
+        func fetchCurrentUser(completion: @escaping (User?,Error?) -> Void) {
+            Authentication.shared.getCurrentUser { curUser, error in
+                guard let curUser = curUser, error == nil else {
+                    completion(nil, error)
+                    return
+                }
+                completion(curUser, nil)
             }
         }
         func fetchUser(completionHandler: @escaping (User?, Error?) -> Void) {
@@ -56,6 +74,7 @@ extension ProfileView {
             
             FireStoreManager.shared.fetchUser(with: userId ,completionHandler: completionHandler)
         }
+        
         func setupUser() {
             if let pic = user?.picture, let username = user?.username {
                 self.username = username
@@ -71,32 +90,42 @@ extension ProfileView {
         
         private func hasFollowButton() {
             guard let user = user else { return }
-            Authentication.shared.getCurrentUser { curUser, error in
+            self.fetchCurrentUser { curUser, error in
                 guard let curUser = curUser, error == nil else {
                     return
                 }
+                
+                
+                
                 if user.id != curUser.id {
                     self.canFollow = true
                     return
                 } else {
                     self.canFollow = false
                 }
+                
             }
+            
         }
         
         func followButtonTapped() {
             guard let user = user else { return }
-            Authentication.shared.getCurrentUser { curUser, error in
+            self.fetchCurrentUser { curUser, error in
                 guard let curUser = curUser, error == nil else {
                     return
                 }
                 if self.followButtonState == .follow {
                     self.followButtonState = .loading
-                    curUser.follow(userToFollow: user.id) { error in
-                        guard error == nil  else { return }
-                        self.isFollowed = true
-                        self.followBackgroundColor = Colors.green
-                        self.followButtonState = .following
+                    curUser.follow(userToFollow: user.id) { result, error in
+                        guard let result = result, error == nil  else { return }
+                       
+                        if result {
+                            self.isFollowed = true
+                            self.followBackgroundColor = Colors.green
+                            self.followButtonState = .following
+                        
+                        }
+                        
                     }
                 } else if self.followButtonState == .following {
                     self.followButtonState = .loading
@@ -108,7 +137,10 @@ extension ProfileView {
                     }
                 }
             }
+            
+            
         }
+        
         func getFollowerCount() {
             user?.getFollowersCount { count in
                 if let count = count {
@@ -149,22 +181,36 @@ extension ProfileView {
                 }
             }
         }
-        private func getFollowers() {
+//        func checkIsRequested() {
+//            guard let user = user else { return }
+//            // check if user using the app has requested to follow this user
+//
+//            user.isRequestedToFollow { res in
+//                if res {
+//                    self.isRequested = true
+//                    self.followButtonState = .requested
+//                    self.followBackgroundColor = .gray
+//                }
+//            }
+//        }
+        internal func getFollowers() {
             user?.fetchFollowers { users, count, error in
                 guard let users = users, let count = count, error == nil else {
                     return
                 }
                 self.followers = users
                 self.followerCount = count
+                self.showsFollowers = true
             }
         }
-        private func getFollowings() {
+        internal func getFollowings() {
             user?.fetchFollowings { users, count, error in
                 guard let users = users, let count = count, error == nil else {
                     return
                 }
                 self.followings = users
                 self.followingCount = count
+                self.showsFollowings = true
             }
         }
 
@@ -178,6 +224,73 @@ extension ProfileView {
                 failLogOut = true
             }
             
+        }
+        
+//        func checkHasRequestedToFollowCurrentUser() {
+//            guard let user = user else { return }
+//            self.fetchCurrentUser { curUser, error in
+//                guard let curUser = curUser, error == nil else {
+//                    return
+//                }
+//
+//
+//                curUser.isRequestedToFollow(by: user.id) { res in
+//                    if res {
+//                        self.hasRequestedToFollowCur = true
+//                    } else {
+//                        self.hasRequestedToFollowCur = false
+//                    }
+//                }
+//            }
+//
+//        }
+//        func acceptFollowRequest() {
+//            guard let user = user else { return }
+//            self.fetchCurrentUser { curUser, error in
+//                guard let curUser = curUser, error == nil else {
+//                    return
+//                }
+//
+//                // add it to current user following
+//                curUser.addToFollowers(userToAdd: user.id) { error in
+//                    guard error == nil else {
+//                        return
+//                    }
+//                    // remove it from current user requests
+//                    curUser.removeFromRequests(userToRemove: user.id) { error in
+//                        guard error == nil else {
+//                            return
+//                        }
+//                        self.hasRequestedToFollowCur = false
+//
+//                    }
+//
+//                }
+//            }
+//
+//
+//        }
+        
+//        func declineFollowRequest() {
+//            guard let user = user else { return }
+//
+//            self.fetchCurrentUser { curUser, error in
+//                guard let curUser = curUser, error == nil else {
+//                    return
+//                }
+//                // remove it from current user requests
+//                curUser.removeFromRequests(userToRemove: user.id) { error in
+//                    guard error == nil else {
+//                        return
+//                    }
+//                    self.hasRequestedToFollowCur = false
+//                }
+//            }
+//
+//        }
+        
+        func editButtonTapped() {
+            self.showEditView = true
         }
     }
 }

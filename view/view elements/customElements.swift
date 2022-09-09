@@ -6,16 +6,31 @@
 //
 
 import SwiftUI
+import SDWebImage
+import SDWebImageSwiftUI
 
-func usernameButton(imageName: String, username: String) -> some View {
-    Button {
-        print("move to profile view")
-    } label: {
-        HStack {
-            Image(systemName: imageName)
-            .font(.largeTitle)
-            Text(username)
-                .font(.body)
+func profileImage(pic: String, size: CGFloat = 100) -> some View {
+    VStack {
+        if let url = URL(string: pic) {
+            WebImage(url:url)
+                .resizable()
+                .scaledToFill()
+                .frame(width: size, height: size)
+                .clipped()
+                .cornerRadius(100)
+                .foregroundColor(Color("accent"))
+                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 8, y: 8)
+                .shadow(color: Color.black.opacity(0.1), radius: 5, x: -8, y: -8)
+        } else {
+            Image("profile")
+                .resizable()
+                .scaledToFill()
+                .frame(width: size, height: size)
+                .clipped()
+                .cornerRadius(100)
+                .foregroundColor(Color("accent"))
+                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 8, y: 8)
+                .shadow(color: Color.black.opacity(0.1), radius: 5, x: -8, y: -8)
         }
     }
 }

@@ -9,6 +9,7 @@ import Foundation
 struct RoomRequest: Codable {
     let name: String
     let description: String
+    let template: String
 }
 
 struct AccessTokenRequest: Codable {

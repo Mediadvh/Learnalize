@@ -38,7 +38,7 @@ struct Message {
         }
         
         let db = FireStoreManager.shared.firestore
-        let senderDocument = db.collection("messages").document(senderId).collection(receiverId).document()
+        let senderDocument = db.collection(Collections.messages).document(senderId).collection(receiverId).document()
        
         let messageData = ["senderId": senderId, "receiverId": receiverId, "text": text, "timestamp": timeStamp] as [String: Any]
         
@@ -52,7 +52,7 @@ struct Message {
            print("successfully saved current user sending message!")
         }
         
-        let recipientDocument = db.collection("messages").document(receiverId).collection(senderId).document()
+        let recipientDocument = db.collection(Collections.messages).document(receiverId).collection(senderId).document()
        
         recipientDocument.setData(messageData) { error in
             guard error == nil else {
@@ -73,7 +73,7 @@ struct Message {
         let db = FireStoreManager.shared.firestore
         let senderMsgData = ["uid": receiverId ,"timestamp": Timestamp(), "text": text, "senderId": senderId, "receiverId": receiverId] as [String: Any]
         
-        let senderDoc = db.collection("recent_messages").document(senderId).collection("messages").document(receiverId)
+        let senderDoc = db.collection(Collections.recentMessages).document(senderId).collection(Collections.messages).document(receiverId)
         
         senderDoc.setData(senderMsgData) { error in
             guard error == nil else {
@@ -83,7 +83,7 @@ struct Message {
         }
         
         let recieverMsgData = ["uid": senderId ,"timestamp": Timestamp(), "text": text, "senderId": senderId, "receiverId": receiverId] as [String: Any]
-        let receiverDoc = db.collection("recent_messages").document(receiverId).collection("messages").document(senderId)
+        let receiverDoc = db.collection(Collections.recentMessages).document(receiverId).collection(Collections.messages).document(senderId)
         
         receiverDoc.setData(recieverMsgData) { error in
             guard error == nil else {

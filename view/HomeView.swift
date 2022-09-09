@@ -29,19 +29,22 @@ struct HomeView: View {
                     }
                     if let activities = viewModel.activities {
                         activityList(activities: activities, isAbleToJoin: true, showsUsername: true)
+                            .refreshable {
+                                viewModel.refreshFeed()
+                            }
                       
                         
                     } else if viewModel.isLoading {
                         LoadingView(color: Colors.background)
                     } else {
-                        Text("nothing to show here")
+                        Text("no activities, follow more people!")
                     }
-                    
+                  
                  
                 }
-            
-                
+              
         }
+      
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .foregroundColor(Color("accent"))
             .navigationBarHidden(true)

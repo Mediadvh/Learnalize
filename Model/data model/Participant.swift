@@ -30,7 +30,7 @@ class Participant  {
 //    // MARK: methods
     internal func requestPermission(activityId: String) {
         // change asked for permission field to true
-        FireStoreManager.shared.firestore.collection("activities").document(activityId).collection("participants").document(self.uid).updateData(["askedForPermission": true]) { error in
+        FireStoreManager.shared.firestore.collection(Collections.activities).document(activityId).collection(Collections.participants).document(self.uid).updateData(["askedForPermission": true]) { error in
             guard error == nil else { return }
         }
 
@@ -38,9 +38,9 @@ class Participant  {
     
     internal func joinActivity(activityId: String) {
       
-        let encodedParticipant = Converter.ParticipatToData(participant: self)
+        let encodedParticipant = Converter.ParticipantToData(participant: self)
         
-        FireStoreManager.shared.firestore.collection("activities").document(activityId).collection("participants").document(self.uid).setData(encodedParticipant) { error in
+        FireStoreManager.shared.firestore.collection(Collections.activities).document(activityId).collection(Collections.participants).document(self.uid).setData(encodedParticipant) { error in
             guard error == nil else {
                 return
             }
@@ -49,11 +49,11 @@ class Participant  {
         
     }
     internal func leaveActivity(activityId: String) {
-        FireStoreManager.shared.firestore.collection("activities").document(activityId).collection("participants").document(self.uid).delete()
+        FireStoreManager.shared.firestore.collection(Collections.activities).document(activityId).collection(Collections.participants).document(self.uid).delete()
        
     }
     internal func storePeerId(activityId: String,id: String) {
-        FireStoreManager.shared.firestore.collection("activities").document(activityId).collection("participants").document(self.uid).updateData(["peerId": id]) { error in
+        FireStoreManager.shared.firestore.collection(Collections.activities).document(activityId).collection(Collections.participants).document(self.uid).updateData(["peerId": id]) { error in
             print("peerId to store: \(id)")
             guard error == nil else {
                 print("DEBUG: error occurred while trying to add peerId field: \(error?.localizedDescription)")

@@ -63,7 +63,17 @@ struct UserResultView: View {
     }
     var userList: some View {
         
+        VStack {
+            if Authentication.shared.isAdmin() {
+                listWithDelete
+            } else {
+                listWithoutDelete
+            }
+            
+        }
         
+    }
+    var listWithDelete: some View {
         List {
             ForEach(users) { item in
                 switch destination {
@@ -85,12 +95,37 @@ struct UserResultView: View {
                 
             }
             .onDelete(perform: delete)
-        }.background(.clear)
+        }
+        .background(.clear)
         
-        
-       
-       
     }
+    var listWithoutDelete: some View {
+        List {
+            ForEach(users) { item in
+                switch destination {
+                case .profileView:
+                    NavigationLink(destination: ProfileView(id: item.id)) {
+                        userCard(user: item)
+                            .frame(width: 300, height: 100, alignment: .leading)
+                    }
+                case .chatLogView:
+                    NavigationLink(destination: ChatLogView(receiver: item)) {
+                        userCard(user: item)
+                            .frame(width: 300, height: 100, alignment: .leading)
+                    }
+                    
+                case .none:
+                    userCard(user: item)
+                        .frame(width: 300, height: 100, alignment: .leading)
+                }
+                
+            }
+           
+        }
+        .background(.clear)
+        
+    }
+    
     func delete(at offsets: IndexSet) {
         let index = offsets[offsets.startIndex]
         FireStoreManager.shared.deleteUser(with: users[index].id) 

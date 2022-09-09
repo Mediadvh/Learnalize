@@ -23,6 +23,8 @@ struct SearchView: View {
                     .font(.body)
                 resultView
                 Spacer(minLength: 0)
+              
+               
                 
             }
            

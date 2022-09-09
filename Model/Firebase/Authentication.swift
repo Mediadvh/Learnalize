@@ -19,6 +19,15 @@ struct Authentication {
     func isLoggedIn() -> Bool {
         return UserDefaults.standard.value(forKey: UserDefaults.Keys.LoggedIn.rawValue) as? Bool ?? false
     }
+    func isAdmin() -> Bool {
+      
+        if let uid = getCurrentUserUid() {
+            return uid == AdminsIdentifiers.admin1
+        } else {
+            return false
+        }
+        
+    }
    
     private func saveLoginInfo(with uid: String) {
         UserDefaults.standard.set(uid, forKey: UserDefaults.Keys.currentUser.rawValue)
@@ -31,7 +40,7 @@ struct Authentication {
         if let user = Cache.shared.getCurrentUser() {
             completionHandler(user,nil)
         } else {
-            FireStoreManager.shared.fetchUser(with: getCurrentUserUid()!) { user, error in
+            FireStoreManager.shared.fetchUser(with: getCurrentUserUid() ?? "") { user, error in
                 completionHandler(user,nil)
             }
         }
@@ -56,15 +65,15 @@ struct Authentication {
         }
     }
     
-    func login(email: String, password: String, completionHandler: @escaping (Bool) -> Void) {
+    func login(email: String, password: String, completionHandler: @escaping (String?,Error?) -> Void) {
         auth.signIn(withEmail: email, password: password) { (result, error) in
             if error != nil {
-                completionHandler(false)
+                completionHandler(nil, error)
             } else {
                 let uid = auth.currentUser?.uid
                 if let uid = uid {
                     saveLoginInfo(with: uid)
-                    completionHandler(true)
+                    completionHandler(uid, nil)
                 }
             }
         }

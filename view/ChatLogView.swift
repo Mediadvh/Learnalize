@@ -41,7 +41,8 @@ struct ChatLogView: View {
             messages
         }
         .navigationBarHidden(true)
-        .background(Color(.init(white: 0.95, alpha: 1)))
+//        .background(Color(.init(white: 0.95, alpha: 1)))
+        .background(Colors.background.opacity(0.3))
         .safeAreaInset(edge: .bottom) {
             chatBottomBar
                 .background(Color(.systemBackground).ignoresSafeArea())
@@ -132,11 +133,11 @@ struct ChatLogView: View {
            
             HStack {
                 Text(text)
-                    .foregroundColor(.black)
+                    .foregroundColor(.white)
                     .font(.body)
             }
             .padding()
-            .background(Color.white)
+            .background(Color.gray)
             .cornerRadius(8)
             Spacer()
         }
@@ -153,7 +154,7 @@ struct ChatLogView: View {
         } label: {
             Image(systemName: "chevron.left")
                 .font(.system(size: 20))
-                .foregroundColor(.black)
+                .foregroundColor(Colors.accent)
             Text("Chat")
                 .foregroundColor(Colors.accent)
                 .font(.body)

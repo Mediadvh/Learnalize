@@ -15,6 +15,7 @@ struct Converter {
         let username = dict["username"] as? String ?? ""
         let password = dict["password"] as? String ?? ""
         let id = dict["id"] as? String ?? ""
+        let visibility = dict["visibility"] as? String ?? "public"
         
         return User(fullName: fullName , picture: picture, email: email, password: password, username: username, id: id)
 
@@ -34,7 +35,7 @@ struct Converter {
         let tagColor = dict["tagColor"] as? String ?? ""
         let active = dict["active"] as? Bool ?? true
         let participantsNumber = dict["participantsNumber"] as? Int ?? 0
-
+//        let visibility = dict["visibility"] as? String ?? "public"
 
         return Activity(name: name, description: description, participantsLimit: participantsLimit, tagColor: tagColor, createdAt: createdAt, uid: uid, active: active, hostId: hostId)
         
@@ -55,10 +56,11 @@ struct Converter {
 
     }
     
-    static func ParticipatToData(participant: Participant) -> [String: Any] {
+    static func ParticipantToData(participant: Participant) -> [String: Any] {
         return  ["role": participant.role.rawValue,
                  "askedForPermission": participant.askedForPermission,
                  "uid": participant.uid,
                  "peerId": participant.peerId]
     }
+    
 }

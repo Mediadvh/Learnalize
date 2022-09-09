@@ -34,7 +34,10 @@ struct LoginView: View {
                 
             }
            
-            NavigationLink(destination: MainView(), isActive: $viewModel.showsMainView) {
+            NavigationLink(destination: MainView(), isActive: $viewModel.showMainView) {
+                EmptyView()
+            }
+            NavigationLink(destination: SearchView(), isActive: $viewModel.showSearchView) {
                 EmptyView()
             }
             if viewModel.isLoading {

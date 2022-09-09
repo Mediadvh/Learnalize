@@ -22,22 +22,39 @@ struct ProfileView: View {
 
     var body: some View {
         VStack {
+            
+            
             topHeader
+//            if viewModel.hasRequestedToFollowCur {
+//                requestToFollowCur
+//            }
             middleHeader
             optionsHeader
             if index == 0, let activities = viewModel.activities  {
                 activityList(activities: activities, isAbleToJoin: false, showsUsername: false)
                     .background(.clear)
+                    .refreshable {
+                        viewModel.showActivities()
+                    }
             } else if index == 1 {
                 UserResultView(users: viewModel.followers, destination: .none)
                     .background(.clear)
+                    .refreshable {
+                        viewModel.getFollowers()
+                    }
             } else {
                 UserResultView(users: viewModel.followings, destination: .none)
                     .background(.clear)
+                    .refreshable {
+                        viewModel.getFollowings()
+                    }
             }
             Spacer(minLength: 0)
+           
+        
             
         }
+     
         .navigationBarHidden(true)
         .onAppear() {
             if let userId = userId {
@@ -59,6 +76,9 @@ struct ProfileView: View {
                 ChatLogView(receiver: user)
             }
             
+        }
+        .sheet(isPresented: $viewModel.showEditView) {
+            EditProfileView()
         }
         
         
@@ -91,6 +111,30 @@ struct ProfileView: View {
         
         
     }
+//    var requestToFollowCur: some View {
+//        HStack(spacing: 20) {
+//            Text("\(viewModel.username) has requested to Follow you")
+//                .font(.system(size: 10))
+//
+//            Button {
+//               // accept follow request
+//                viewModel.acceptFollowRequest()
+//            } label: {
+//                Image(systemName: "checkmark.circle.fill")
+//                    .foregroundColor(.green)
+//            }
+//
+//            Button {
+//                // decline follow request
+//                viewModel.declineFollowRequest()
+//            } label: {
+//                Image(systemName: "x.circle.fill")
+//                    .foregroundColor(.red)
+//            }
+//
+//
+//        }.padding(.leading)
+//    }
     var topHeader: some View {
         
         HStack(spacing: 15) {
@@ -195,6 +239,7 @@ struct ProfileView: View {
     var editButton: some View {
         Button {
             // edit tapped
+            viewModel.editButtonTapped()
         } label: {
             ZStack {
                 Rectangle()
@@ -241,37 +286,13 @@ struct ProfileView: View {
         } label: {
             Image(systemName: "chevron.left")
                 .font(.system(size: 20))
-                .foregroundColor(.black)
+                .foregroundColor(Colors.accent)
             Text("Profile")
                 .foregroundColor(Colors.accent)
                 .font(.body)
         }
     }
-    func profileImage(pic: String) -> some View {
-        VStack {
-            if let url = URL(string: pic) {
-                WebImage(url:url)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 100, height: 100)
-                    .clipped()
-                    .cornerRadius(100)
-                    .foregroundColor(Color("accent"))
-                    .shadow(color: Color.black.opacity(0.1), radius: 5, x: 8, y: 8)
-                    .shadow(color: Color.black.opacity(0.1), radius: 5, x: -8, y: -8)
-            } else  {
-                Image("profile")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 100, height: 100)
-                    .clipped()
-                    .cornerRadius(100)
-                    .foregroundColor(Color("accent"))
-                    .shadow(color: Color.black.opacity(0.1), radius: 5, x: 8, y: 8)
-                    .shadow(color: Color.black.opacity(0.1), radius: 5, x: -8, y: -8)
-            }
-        }
-    }
+    
     
    
     var message: some View {

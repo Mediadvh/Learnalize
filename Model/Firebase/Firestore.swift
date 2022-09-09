@@ -12,23 +12,31 @@ import SwiftUI
 
 import FirebaseFirestoreSwift
 enum collectionMode { case following, follower }
+
+struct Collections {
+    static let users = "users"
+    static let followers = "followers"
+    static let followings = "followings"
+    static let userFollowers = "user-followers"
+    static let userFollowings = "user-followings"
+    static let recentMessages = "recent_messages"
+    static let messages = "messages"
+    static let activities = "activities"
+    static let participants = "participants"
+   
+}
 class FireStoreManager {
     
     static let shared = FireStoreManager()
     let auth: Auth
     let firestore: Firestore
     let storage: Storage
-    let userCollection: CollectionReference
-    let followerCollection: CollectionReference
-    let followingCollection: CollectionReference
+    
     private init() {
          auth = Auth.auth()
          storage = Storage.storage()
-         firestore = Firestore.firestore()
-         userCollection = firestore.collection("users")
-         followerCollection = firestore.collection("followers")
-         followingCollection = firestore.collection("followings")
-        
+        firestore = Firestore.firestore()
+//         followRequestCollection = firestore.collection("follow_requests")
     }
     
     //MARK: - User related
@@ -36,7 +44,7 @@ class FireStoreManager {
         
         let db = FireStoreManager.shared
         
-        let docRef = db.userCollection.document(userId)
+        let docRef = firestore.collection(Collections.users).document(userId)
         
         docRef.getDocument { document, error in
             guard error == nil, let document = document else {
@@ -61,11 +69,11 @@ class FireStoreManager {
         var collection1: CollectionReference
         var collectionName2: String
         if of == .follower {
-            collection1 = followerCollection
-            collectionName2 = "user-followers"
+            collection1 = firestore.collection(Collections.followers)
+            collectionName2 = Collections.userFollowers
         } else {
-            collection1 = followingCollection
-            collectionName2 = "user-following"
+            collection1 = firestore.collection(Collections.followings)
+            collectionName2 = Collections.userFollowings
         }
         collection1.document(id).collection(collectionName2).getDocuments()
         {
@@ -101,35 +109,35 @@ class FireStoreManager {
     
     func deleteUser(with userId: String) {
         // delete the user
-        firestore.collection("users").document(userId).delete { error in
+        firestore.collection(Collections.users).document(userId).delete { error in
             guard error == nil else {
                 return
             }
             print("deleted user with userId: \(userId)")
         }
         // delete it from followers
-        firestore.collection("followers").document(userId).delete { error in
+        firestore.collection(Collections.followers).document(userId).delete { error in
             guard error == nil else {
                 return
             }
             print("deleted user from followers with user id: \(userId)")
         }
         // delete it from followings
-        firestore.collection("followings").document(userId).delete { error in
+        firestore.collection(Collections.followings).document(userId).delete { error in
             guard error == nil else {
                 return
             }
             print("deleted user from followings with user id: \(userId)")
         }
         // delete it from recent messages
-        firestore.collection("recent_messages").document(userId).delete { error in
+        firestore.collection(Collections.recentMessages).document(userId).delete { error in
             guard error == nil else {
                 return
             }
             print("deleted user from recent messages with user id: \(userId)")
         }
         // delete it from messages
-        firestore.collection("messages").document(userId).delete { error in
+        firestore.collection(Collections.messages).document(userId).delete { error in
             guard error == nil else {
                 return
             }
@@ -137,12 +145,19 @@ class FireStoreManager {
         }
         
         // delete activities made by it
-        firestore.collection("activities").document(userId).delete { error in
-            guard error == nil else {
+        let docRef = firestore.collection(Collections.messages).whereField("hostId", in: [userId])
+        
+        docRef.getDocuments { snapshot, error in
+            guard let snapshot = snapshot,error == nil else {
                 return
             }
-            print("deleted user from activities with user id: \(userId)")
+            for document in snapshot.documents {
+                document.reference.delete()
+                print("deleted user from activities with user id: \(userId)")
+            }
         }
+
+        
     }
 
     // MARK: -Activity related
@@ -169,8 +184,11 @@ class FireStoreManager {
 //        }
 //    }
    
+    func deleteActivity(with id: String, completion: @escaping (Error?) -> Void) {
+        firestore.collection(Collections.activities).document(id).delete(completion: completion)
+    }
     func fetchActivities(filter hostId: String, completionHandler: @escaping ([Activity]?,Int?, Error?) -> Void) {
-        let docRefs = firestore.collection("activities").whereField("hostId", in: [hostId]).limit(to: 2000 )
+        let docRefs = firestore.collection(Collections.activities).whereField("hostId", in: [hostId]).limit(to: 2000 )
         docRefs.getDocuments { querySnapshot, error in
             guard error == nil else {
                 completionHandler(nil,nil,error)
@@ -198,7 +216,7 @@ class FireStoreManager {
         }
     }
     func searchActivity(by name: String, completionHandler: @escaping ([Activity]?, Error?) -> Void) {
-        let docRefs = firestore.collection("activities").whereField("name", isGreaterThanOrEqualTo: name).whereField("name", isLessThan: name + "z").limit(to: 10)
+        let docRefs = firestore.collection(Collections.activities).whereField("name", isGreaterThanOrEqualTo: name).whereField("name", isLessThan: name + "z").limit(to: 10)
         docRefs.getDocuments { querySnapshot, error in
             guard error == nil else {
                 completionHandler(nil,error)
@@ -226,7 +244,7 @@ class FireStoreManager {
     
     func searchUser(by username: String, completionHandler: @escaping ([User]?, Error?) -> Void) {
         
-        let docRefs = firestore.collection("users").whereField("username", isGreaterThanOrEqualTo: username).whereField("username", isLessThan: username + "z").limit(to: 10)
+        let docRefs = firestore.collection(Collections.users).whereField("username", isGreaterThanOrEqualTo: username).whereField("username", isLessThan: username + "z").limit(to: 10)
 
         
         docRefs.getDocuments { querySnapshot, error in
@@ -271,7 +289,7 @@ class FireStoreManager {
     
     func fetchMessages(senderId: String, receiverId: String, completion: @escaping ([Message]?,Error?) -> Void) {
         var messages = [Message]()
-        firestore.collection("messages").document(senderId).collection(receiverId).order(by: "timestamp").addSnapshotListener { querySnapshot, error in
+        firestore.collection(Collections.messages).document(senderId).collection(receiverId).order(by: "timestamp").addSnapshotListener { querySnapshot, error in
             guard error == nil else {
                 print("couldn't fetch messages")
                 completion(nil,error)
@@ -293,7 +311,7 @@ class FireStoreManager {
     }
     func fetchRecentMessages(userId: String, completion: @escaping ([Chat]?,Error?) -> Void) {
         var recentChat = [Chat]()
-        firestore.collection("recent_messages").document(userId).collection("messages").order(by: "timestamp").addSnapshotListener { querySnapshot, error in
+        firestore.collection(Collections.recentMessages).document(userId).collection(Collections.messages).order(by: "timestamp", descending: true).addSnapshotListener { querySnapshot, error in
             guard error == nil else {
                 print("couldn't fetch messages")
                 completion(nil, error)
@@ -341,7 +359,7 @@ class FireStoreManager {
     
     func checkForPermissions(activityId: String, completion: @escaping ([String]?, Error?) -> Void) {
         var users = [String]()
-        firestore.collection("activities").document(activityId).collection("participants").addSnapshotListener { querySnapshot, error in
+        firestore.collection(Collections.activities).document(activityId).collection(Collections.participants).addSnapshotListener { querySnapshot, error in
             guard error == nil else {
                 print("couldn't check for permissions")
                 completion(nil,error)

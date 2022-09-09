@@ -24,8 +24,10 @@ struct ChatListView: View {
                 
                 
                 
+            
                 
             }
+            
             .padding()
             Rectangle()
                 .frame(height: 2, alignment: .center)
@@ -38,8 +40,12 @@ struct ChatListView: View {
             //                    .overlay(newMessageButton, alignment: .bottom)
             //            }
             Spacer()
+           
             
-        }.navigationBarHidden(true)
+        
+            
+        }
+        .navigationBarHidden(true)
         //        .fullScreenCover(isPresented: $viewModel.showNewMessageList) {
         //
         //            UserResultView(users: viewModel.NewMessageList, destination: .chatLogView)
@@ -154,7 +160,7 @@ struct ChatListView: View {
                     } else {
                         Text(chat.recentMessage.text)
                             .font(.system(size: 16))
-                            .foregroundColor(Color(.black))
+                            .foregroundColor(Colors.accent)
                     }
                    
 
