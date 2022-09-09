@@ -7,5 +7,5 @@
 
 import Foundation
 struct AdminsIdentifiers {
-    static let admin1 = "O2dOAny1vYZilKfRAcNHS2fBMGP2"
+    static let admin1 = "admin_identifier"
 }
